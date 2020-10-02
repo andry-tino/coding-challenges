@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,10 +17,12 @@ namespace Challenge.WebIntSorter.Controllers
     public class SortingController : ControllerBase
     {
         private readonly ILogger<SortingController> logger;
+        private ConcurrentDictionary<Guid, IEnumerable<int>> jobs;
 
         public SortingController(ILogger<SortingController> logger)
         {
             this.logger = logger;
+            this.jobs = new ConcurrentDictionary<Guid, IEnumerable<int>>();
         }
 
         [HttpGet]
@@ -38,7 +41,7 @@ namespace Challenge.WebIntSorter.Controllers
         public async Task<ActionResult<SortingJob>> Post()
         {
             var rng = new Random();
-            var values = await Task.Run(() =>
+            var values = await Task<SortingJob>.Run(() =>
             {
                 return new SortingJob
                 {
