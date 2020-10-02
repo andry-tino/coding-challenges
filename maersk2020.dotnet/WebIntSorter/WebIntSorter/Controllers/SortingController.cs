@@ -21,10 +21,15 @@ namespace Challenge.WebIntSorter.Controllers
         private readonly ILogger<SortingController> logger;
         private readonly SortingJobContext dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SortingController"/> class.
+        /// </summary>
+        /// <param name="logger">The logger passed as dependency.</param>
+        /// <param name="dbContext">The database context passed as dependency.</param>
         public SortingController(ILogger<SortingController> logger, SortingJobContext dbContext)
         {
             this.logger = logger;
-            this.dbContext = dbContext;
+            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         [HttpGet]
@@ -40,11 +45,19 @@ namespace Challenge.WebIntSorter.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<SortingJob>> Post()
+        public async Task<ActionResult<SortingJob>> Post(SortingJob input)
         {
-            //var jobId = await this.jobsController.CreateAsync(new int[] { 3, 1, 6 });
-            var jobId = await this.CreateAsync(new int[] { 3, 1, 6 });
+            // Validate input
+            var sequence = input.IntegerValues;
+            if (sequence == null)
+            {
+                throw new ArgumentException("A numeric sequence is required", nameof(input));
+            }
 
+            // Start background job
+            var jobId = await this.CreateAsync(sequence);
+
+            // Return response
             return CreatedAtAction("post", new { id = jobId });
         }
 

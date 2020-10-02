@@ -51,7 +51,7 @@ namespace Challenge.WebIntSorter
             {
                 if (this.Values == null)
                 {
-                    return new int[0];
+                    return null;
                 }
 
                 return this.Values.Split(",").Select(s =>

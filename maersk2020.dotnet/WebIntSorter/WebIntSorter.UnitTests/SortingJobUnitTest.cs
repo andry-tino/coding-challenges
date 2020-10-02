@@ -22,6 +22,13 @@ namespace Challenge.WebIntSorter.UnitTests
         }
 
         [TestMethod]
+        public void WhenValuesIsNullThenIntegerValuesIsNull()
+        {
+            var job = new SortingJob();
+            Assert.IsNull(job.IntegerValues, "IntegerValues should be null when Values is null");
+        }
+
+        [TestMethod]
         public void WhenCreatedThenTimestampIsAssigned()
         {
             var job = new SortingJob();
