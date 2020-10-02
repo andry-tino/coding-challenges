@@ -20,13 +20,11 @@ namespace Challenge.WebIntSorter.Controllers
     {
         private readonly ILogger<SortingController> logger;
         private readonly SortingJobContext dbContext;
-        private SortingJobsController jobsController;
 
         public SortingController(ILogger<SortingController> logger, SortingJobContext dbContext)
         {
             this.logger = logger;
             this.dbContext = dbContext;
-            this.jobsController = new SortingJobsController();
         }
 
         [HttpGet]
@@ -74,7 +72,6 @@ namespace Challenge.WebIntSorter.Controllers
                         var sortedSequence = await input.SortIntegers();
                         stopwatch.Stop();
 
-                        //job.Values = sortedSequence.ToString();
                         job.IntegerValues = sortedSequence;
                         job.Status = SortingJobStatus.Completed;
                         job.Duration = stopwatch.ElapsedMilliseconds;

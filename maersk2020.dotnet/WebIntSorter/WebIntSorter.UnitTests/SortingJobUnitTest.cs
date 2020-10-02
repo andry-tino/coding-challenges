@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Challenge.WebIntSorter.UnitTests
@@ -8,18 +8,17 @@ namespace Challenge.WebIntSorter.UnitTests
     public class SortingJobUnitTest
     {
         [TestMethod]
-        public void WhenCreatedThenNewGuidIsAssigned()
+        public void IntegerValuesMapToValues()
         {
             var job = new SortingJob();
-            Assert.IsNotNull(job.Id, "A new id should have been assigned");
-        }
+            var sequence = new int[] { 1, 3 };
+            job.IntegerValues = sequence.Clone() as int[];
 
-        [TestMethod]
-        public void IdsAreUnique()
-        {
-            var job1 = new SortingJob();
-            var job2 = new SortingJob();
-            Assert.AreNotEqual(job1.Id, job2.Id, "Ids should be different");
+            Assert.IsTrue(Enumerable.SequenceEqual<int>(sequence, job.IntegerValues), "Unexpected stored value");
+            Assert.AreEqual("1,3", job.Values, "Values were not properly mapped from IntegerValues");
+
+            job.Values = "4,3";
+            Assert.IsTrue(Enumerable.SequenceEqual<int>(new int[] { 4, 3 }, job.IntegerValues), "Unexpected stored value");
         }
 
         [TestMethod]
