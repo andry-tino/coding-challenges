@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Maersk2020DotNet.WebIntSorter</AssemblyName>
+    <RootNamespace>Challenge.WebIntSorter</RootNamespace>
+  </PropertyGroup>
+
+
+</Project>
