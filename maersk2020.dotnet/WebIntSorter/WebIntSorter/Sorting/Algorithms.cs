@@ -22,7 +22,7 @@ namespace Challenge.WebIntSorter
                 return null;
             }
 
-            return await Task<IEnumerable<int>>.Run(() => 
+            return await Task<IEnumerable<int>>.Run(() =>
             {
                 var sortedValues = new List<int>(values);
                 sortedValues.Sort();

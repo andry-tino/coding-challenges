@@ -12,10 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Challenge.WebIntSorter.Models;
+using Microsoft.EntityFrameworkCore;
+
 namespace Challenge.WebIntSorter
 {
     /// <summary>
-    /// Handles configuration operations to properly setup the server.
+    /// Handles configuration operations to properly setup the server by
+    /// injecting all the required dependencies.
     /// </summary>
     public class Startup
     {
@@ -35,6 +39,9 @@ namespace Challenge.WebIntSorter
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<SortingJobContext>(options => options.UseInMemoryDatabase("JobsDb"));
+            services.AddScoped<SortingJobContext>();
+
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {

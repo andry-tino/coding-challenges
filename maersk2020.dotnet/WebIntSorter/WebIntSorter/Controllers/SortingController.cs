@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
+using Challenge.WebIntSorter.Models;
 
 namespace Challenge.WebIntSorter.Controllers
 {
@@ -17,12 +19,14 @@ namespace Challenge.WebIntSorter.Controllers
     public class SortingController : ControllerBase
     {
         private readonly ILogger<SortingController> logger;
-        private ConcurrentDictionary<Guid, IEnumerable<int>> jobs;
+        private readonly SortingJobContext dbContext;
+        private SortingJobsController jobsController;
 
-        public SortingController(ILogger<SortingController> logger)
+        public SortingController(ILogger<SortingController> logger, SortingJobContext dbContext)
         {
             this.logger = logger;
-            this.jobs = new ConcurrentDictionary<Guid, IEnumerable<int>>();
+            this.dbContext = dbContext;
+            this.jobsController = new SortingJobsController();
         }
 
         [HttpGet]
@@ -33,25 +37,53 @@ namespace Challenge.WebIntSorter.Controllers
             {
                 Duration = 10,
                 Status = SortingJobStatus.Pending,
-                Values = new int[] { 3, 5, 7 }
+                Values = (new int[] { 3, 5, 7 }).ToString()
             };
         }
 
         [HttpPost]
         public async Task<ActionResult<SortingJob>> Post()
         {
-            var rng = new Random();
-            var values = await Task<SortingJob>.Run(() =>
-            {
-                return new SortingJob
-                {
-                    Duration = 10,
-                    Status = SortingJobStatus.Pending,
-                    Values = new int[] { 3, 5, 7 }
-                };
-            });
+            //var jobId = await this.jobsController.CreateAsync(new int[] { 3, 1, 6 });
+            var jobId = await this.CreateAsync(new int[] { 3, 1, 6 });
 
-            return CreatedAtAction("post", values);
+            return CreatedAtAction("post", new { id = jobId });
+        }
+
+        private async Task<long> CreateAsync(IEnumerable<int> input)
+        {
+            return await Task<long>.Run(() =>
+            {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                var job = new SortingJob()
+                {
+                    Duration = -1,
+                    Status = SortingJobStatus.Pending,
+                    Values = null
+                };
+
+                this.dbContext.AddJob(job);
+                this.dbContext
+                    // Save to DB, do not wait for this
+                    .SaveChangesAsync()
+                    // Then continue to sorting (still non-blocking)
+                    .ContinueWith(async antecedent =>
+                    {
+                        var sortedSequence = await input.SortIntegers();
+                        stopwatch.Stop();
+
+                        //job.Values = sortedSequence.ToString();
+                        job.IntegerValues = sortedSequence;
+                        job.Status = SortingJobStatus.Completed;
+                        job.Duration = stopwatch.ElapsedMilliseconds;
+                        this.dbContext.SaveChanges();
+                    });
+
+                // Return the id
+                return job.Id;
+            });
         }
     }
 }
