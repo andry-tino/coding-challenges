@@ -13,6 +13,9 @@ namespace Challenge.WebIntSorter
         /// <summary>
         /// The unique ID assigned to this job.
         /// </summary>
+        /// <remarks>
+        /// This will act as primary key of the entity.
+        /// </remarks>
         public long Id { get; set; }
 
         /// <summary>
