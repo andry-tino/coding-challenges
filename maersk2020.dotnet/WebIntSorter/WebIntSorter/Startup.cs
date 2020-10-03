@@ -45,7 +45,7 @@ namespace Challenge.WebIntSorter
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.AllowTrailingCommas = false;
+                    //options.JsonSerializerOptions.AllowTrailingCommas = false;
                 });
         }
 

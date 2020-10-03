@@ -45,7 +45,7 @@ namespace Challenge.WebIntSorter.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<SortingJob>> Post(SortingJob input)
+        public async Task<ActionResult> Post(SortingJob input)
         {
             // Validate input
             var sequence = input.IntegerValues;

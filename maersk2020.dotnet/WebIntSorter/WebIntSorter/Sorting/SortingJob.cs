@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -10,12 +11,15 @@ namespace Challenge.WebIntSorter
     /// </summary>
     public class SortingJob
     {
+        private IEnumerable<int> integerValues;
+
         /// <summary>
         /// The unique ID assigned to this job.
         /// </summary>
         /// <remarks>
         /// This will act as primary key of the entity.
         /// </remarks>
+        [Key]
         public long Id { get; set; }
 
         /// <summary>
@@ -42,33 +46,30 @@ namespace Challenge.WebIntSorter
         /// Do not use this when getting or setting the values in code,
         /// use <see cref="IntegerValues"/> instead.
         /// </remarks>
-        public string Values { get; set; }
+        public string Values { get; set; } // RENATO TO '_RawValues'
 
         /// <summary>
         /// Utility property to allow interfacing with <see cref="Values"/> using the proper type.
         /// </summary>
         [NotMapped]
-        public IEnumerable<int> IntegerValues
+        public IEnumerable<int> IntegerValues // RENAME TO 'Values'
         {
-            get
-            {
-                if (this.Values == null)
-                {
-                    return null;
-                }
-
-                return this.Values.Split(",").Select(s =>
-                {
-                    var success = int.TryParse(s, out int v);
-                    return success ? v : 0;
-                });
-            }
+            get { return this.integerValues; }
 
             set
             {
+                this.integerValues = value;
+
                 if (value == null)
                 {
                     this.Values = null;
+                    return;
+                }
+
+                if (value.Count() == 0)
+                {
+                    this.Values = string.Empty;
+                    return;
                 }
 
                 this.Values = value.Select(n => n.ToString()).Aggregate((string a, string b) => $"{a},{b}");
