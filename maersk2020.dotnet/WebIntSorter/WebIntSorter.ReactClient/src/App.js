@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stack, Text, FontWeights, TextField, DefaultButton, Separator, PrimaryButton, Link, Callout, mergeStyleSets } from 'office-ui-fabric-react';
+import { Stack, Text, FontWeights, TextField, DefaultButton, Separator, PrimaryButton, Link, Callout, Spinner, SpinnerSize, mergeStyleSets } from 'office-ui-fabric-react';
 import './App.css';
 import { array2str, createRandomSequence } from "./utils"
 
@@ -16,6 +16,7 @@ function App() {
   const [jobState, setOutJobState] = useState("");
   const [port, setPort] = useState(5001);
   const [calloutVisible, setCalloutVisible] = useState(false);
+  const [spinnerVisible, setSpinnerVisible] = useState(false);
   const [inputEnabled, setInputEnabled] = useState(true);
   const [enqueueButtonEnabled, setEnqueueButtonEnabled] = useState(true);
 
@@ -53,12 +54,19 @@ function App() {
         <Stack gap={15} verticalAlign="stretch">
           <DefaultButton text="Random sequence" onClick={onButtonRndClick} disabled={!inputEnabled}></DefaultButton>
           <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick} disabled={!inputEnabled}></DefaultButton>
+          <Stack horizontal horizontalAlign="space-between">
+            <Stack.Item grow={1}>
+              <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
+            </Stack.Item>
+            <Stack.Item grow={0}>
+              { spinnerVisible &&
+                <Spinner size={SpinnerSize.medium} />
+              }
+            </Stack.Item>
+          </Stack>
         </Stack>
         <Separator vertical />
-        <Stack gap={15} verticalAlign="stretch">
-          <TextField multiline rows={7} onChange={updateSrcTextState} value={srcText} disabled={!inputEnabled}></TextField>
-          <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
-        </Stack>
+        <TextField multiline rows={7} onChange={updateSrcTextState} value={srcText} disabled={!inputEnabled}></TextField>
         <TextField multiline readOnly disabled rows={7} value={outText}></TextField>
       </Stack>
       <Separator />
@@ -96,6 +104,7 @@ function App() {
   function onButtonEnqueueClick() {
     setOutText("Processing...");
     setInputEnabled(false);
+    setSpinnerVisible(true);
 
     fetch(`${serverAddress}/sorting`, {
       method: "POST",
@@ -110,6 +119,7 @@ function App() {
       setOutText(`Error: ${err}`);
     }).finally(() => {
       setInputEnabled(true);
+      setSpinnerVisible(false);
     });
   }
 
