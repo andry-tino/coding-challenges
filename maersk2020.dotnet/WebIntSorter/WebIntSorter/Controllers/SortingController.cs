@@ -32,12 +32,32 @@ namespace Challenge.WebIntSorter.Controllers
             this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
+        /// <summary>
+        /// Gets all jobs.
+        /// </summary>
+        /// <returns>A collection of <see cref="SortingJob"/>.</returns>
         [HttpGet]
-        public IEnumerable<SortingJob> Get()
+        public IEnumerable<SortingJob> GetAll()
         {
             return this.dbContext.RetrieveJobs();
         }
 
+        /// <summary>
+        /// Gets one specific job.
+        /// </summary>
+        /// <param name="id">The id of the job to look for.</param>
+        /// <returns>The requested <see cref="SortingJob"/>.</returns>
+        [HttpGet("{id}")]
+        public SortingJob Get(long id)
+        {
+            return this.dbContext.RetrieveJob(id);
+        }
+
+        /// <summary>
+        /// Creates a new job.
+        /// </summary>
+        /// <param name="input">The input <see cref="SortingJob"/> which must ensure to have values defined.</param>
+        /// <returns>The id of the created job.</returns>
         [HttpPost]
         public async Task<ActionResult> Post(SortingJob input)
         {
