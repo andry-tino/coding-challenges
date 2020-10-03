@@ -46,7 +46,7 @@ namespace Challenge.WebIntSorter
         /// Do not use this when getting or setting the values in code,
         /// use <see cref="IntegerValues"/> instead.
         /// </remarks>
-        public string Values { get; set; } // RENATO TO '_RawValues'
+        public string Values { get; set; } // RENAME TO TO '_RawValues'
 
         /// <summary>
         /// Utility property to allow interfacing with <see cref="Values"/> using the proper type.

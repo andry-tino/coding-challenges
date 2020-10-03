@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,10 +40,7 @@ namespace Challenge.WebIntSorter
             services.AddScoped<SortingJobContext>();
 
             services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    //options.JsonSerializerOptions.AllowTrailingCommas = false;
-                });
+                .AddJsonOptions(this.ConfigureJsonSerialization);
         }
 
         /// <summary>
@@ -75,6 +69,10 @@ namespace Challenge.WebIntSorter
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private void ConfigureJsonSerialization(JsonOptions options)
+        {
         }
     }
 }

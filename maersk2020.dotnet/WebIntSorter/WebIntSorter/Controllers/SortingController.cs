@@ -65,11 +65,14 @@ namespace Challenge.WebIntSorter.Controllers
             var sequence = input.IntegerValues;
             if (sequence == null)
             {
+                this.logger.LogError($"Numeric sequence provided is null, cannot enqueue job");
                 throw new ArgumentException("A numeric sequence is required", nameof(input));
             }
 
             // Start background job
             var jobId = await this.CreateAsync(sequence);
+
+            this.logger.LogInformation($"Enqueued sorting job '{jobId}' with {sequence.Count()} elements to sort");
 
             // Return response
             return CreatedAtAction("post", new { id = jobId });
@@ -89,21 +92,36 @@ namespace Challenge.WebIntSorter.Controllers
                     Values = null
                 };
 
-                this.dbContext.AddJob(job);
-                this.dbContext
-                    // Save to DB, do not wait for this
-                    .SaveChangesAsync()
-                    // Then continue to sorting (still non-blocking)
-                    .ContinueWith(async antecedent =>
-                    {
-                        var sortedSequence = await input.SortIntegers();
-                        stopwatch.Stop();
+                try
+                {
+                    this.dbContext.AddJob(job);
+                    this.dbContext
+                        // Save to DB, do not wait for this
+                        .SaveChangesAsync() // An Id will be automatically created here
+                        // Then continue to sorting (still non-blocking)
+                        .ContinueWith(async antecedent =>
+                        {
+                            var sortedSequence = await input.SortIntegers();
+                            stopwatch.Stop();
 
-                        job.IntegerValues = sortedSequence;
-                        job.Status = SortingJobStatus.Completed;
-                        job.Duration = stopwatch.ElapsedMilliseconds;
-                        this.dbContext.SaveChanges();
-                    });
+                            job.IntegerValues = sortedSequence;
+                            job.Status = SortingJobStatus.Completed;
+                            job.Duration = stopwatch.ElapsedMilliseconds;
+                            this.dbContext.SaveChanges();
+                        });
+                }
+                catch (Exception e)
+                {
+                    this.logger.LogError($"Error while executing job '{job.Id}': {e.Message}");
+                    throw e;
+                }
+                finally
+                {
+                    if (stopwatch.IsRunning)
+                    {
+                        stopwatch.Stop();
+                    }
+                }
 
                 // Return the id
                 return job.Id;
