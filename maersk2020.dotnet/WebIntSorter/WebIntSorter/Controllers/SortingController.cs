@@ -33,15 +33,9 @@ namespace Challenge.WebIntSorter.Controllers
         }
 
         [HttpGet]
-        public SortingJob Get()
+        public IEnumerable<SortingJob> Get()
         {
-            var rng = new Random();
-            return new SortingJob
-            {
-                Duration = 10,
-                Status = SortingJobStatus.Pending,
-                Values = (new int[] { 3, 5, 7 }).ToString()
-            };
+            return this.dbContext.RetrieveJobs();
         }
 
         [HttpPost]

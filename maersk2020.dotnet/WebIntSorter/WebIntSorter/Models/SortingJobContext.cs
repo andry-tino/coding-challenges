@@ -44,7 +44,7 @@ namespace Challenge.WebIntSorter.Models
         /// Gets all stored jobs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<SortingJob> RetrieveJob()
+        public IEnumerable<SortingJob> RetrieveJobs()
         {
             return this.Jobs.ToArray();
         }
