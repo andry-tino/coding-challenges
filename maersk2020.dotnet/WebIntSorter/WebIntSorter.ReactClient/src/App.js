@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stack, Text, FontWeights, TextField, DefaultButton, Separator } from 'office-ui-fabric-react';
+import { Stack, Text, FontWeights, TextField, DefaultButton, Separator, PrimaryButton, Link, Callout, mergeStyleSets } from 'office-ui-fabric-react';
 import './App.css';
 import { array2str, createRandomSequence } from "./utils"
 
@@ -14,6 +14,18 @@ function App() {
   const [srcText, setSrcText] = useState("");
   const [jobId, setOutJobId] = useState("Job id");
   const [jobState, setOutJobState] = useState("");
+  const [port, setPort] = useState(5001);
+  const [calloutVisible, setCalloutVisible] = useState(false);
+  const [inputEnabled, setInputEnabled] = useState(true);
+  const [enqueueButtonEnabled, setEnqueueButtonEnabled] = useState(true);
+
+  const portLinkCssClassName = "port-link";
+  const calloutStyles = mergeStyleSets({
+    callout: {
+      maxWidth: 300,
+      padding: ".5em"
+    }
+  });
 
   return (
     <Stack
@@ -33,17 +45,20 @@ function App() {
       <Text variant="xxLarge" styles={boldStyle}>
         Welcome to WebIntSorter client
       </Text>
-      <Text variant="large">Make sure the server is running on your localbox on port {port}.</Text>
+      <Text variant="large">Make sure the server is running on port <Link className={portLinkCssClassName} onClick={onPortLinkClick}>{port}</Link> your localhost.</Text>
       <Text variant="large" styles={boldStyle}>
         Enqueue jobs
       </Text>
       <Stack horizontal gap={15} horizontalAlign="center">
         <Stack gap={15} verticalAlign="stretch">
-          <DefaultButton text="Random sequence" onClick={onButtonRndClick}></DefaultButton>
-          <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick}></DefaultButton>
+          <DefaultButton text="Random sequence" onClick={onButtonRndClick} disabled={!inputEnabled}></DefaultButton>
+          <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick} disabled={!inputEnabled}></DefaultButton>
         </Stack>
         <Separator vertical />
-        <TextField multiline rows={7} onChange={updateSrcTextState} onBlur={onSrcBlur} value={srcText}></TextField>
+        <Stack gap={15} verticalAlign="stretch">
+          <TextField multiline rows={7} onChange={updateSrcTextState} value={srcText} disabled={!inputEnabled}></TextField>
+          <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
+        </Stack>
         <TextField multiline readOnly disabled rows={7} value={outText}></TextField>
       </Stack>
       <Separator />
@@ -54,15 +69,33 @@ function App() {
         <TextField value={jobId}></TextField>
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
       </Stack>
+      { calloutVisible &&
+        <Callout target={`.${portLinkCssClassName}`} onDismiss={onCalloutDismissClick} role="alertdialog" gapSpace={0} className={calloutStyles.callout} setInitialFocus>
+          <TextField label="Server port" value={port} onChange={onPortTextBoxChange}></TextField>
+        </Callout>
+      }
     </Stack>
   );
+
+  function onPortLinkClick() {
+    setCalloutVisible(true);
+  }
+
+  function onCalloutDismissClick() {
+    setCalloutVisible(false);
+  }
 
   function updateSrcTextState(e) {
     setSrcText(e.target.value);
   }
 
-  function onSrcBlur() {
+  function onPortTextBoxChange(e) {
+    setPort(e.target.value);
+  }
+
+  function onButtonEnqueueClick() {
     setOutText("Processing...");
+    setInputEnabled(false);
 
     fetch(`${serverAddress}/sorting`, {
       method: "POST",
@@ -75,6 +108,8 @@ function App() {
       setOutText("Hellooooooo");
     }).catch(err => {
       setOutText(`Error: ${err}`);
+    }).finally(() => {
+      setInputEnabled(true);
     });
   }
 
