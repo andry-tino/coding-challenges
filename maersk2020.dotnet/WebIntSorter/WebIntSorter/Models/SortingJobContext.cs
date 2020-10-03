@@ -37,7 +37,7 @@ namespace Challenge.WebIntSorter.Models
         /// <returns></returns>
         public SortingJob RetrieveJob(long id)
         {
-            return this.Jobs.FirstOrDefault(job => job.Id == id);
+            return this.Jobs.FirstOrDefault(job => job.Id == id)?.SyncValues();
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Challenge.WebIntSorter.Models
         /// <returns></returns>
         public IEnumerable<SortingJob> RetrieveJobs()
         {
-            return this.Jobs.ToArray();
+            return this.Jobs.Select(job => job.SyncValues()).ToArray();
         }
     }
 }

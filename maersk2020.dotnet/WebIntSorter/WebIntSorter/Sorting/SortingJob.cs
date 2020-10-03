@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Challenge.WebIntSorter
 {
@@ -11,7 +12,7 @@ namespace Challenge.WebIntSorter
     /// </summary>
     public class SortingJob
     {
-        private IEnumerable<int> integerValues;
+        private IEnumerable<int> values;
 
         /// <summary>
         /// The unique ID assigned to this job.
@@ -44,36 +45,64 @@ namespace Challenge.WebIntSorter
         /// </summary>
         /// <remarks>
         /// Do not use this when getting or setting the values in code,
-        /// use <see cref="IntegerValues"/> instead.
+        /// use <see cref="Values"/> instead.
         /// </remarks>
-        public string Values { get; set; } // RENAME TO TO '_RawValues'
+        [JsonIgnore]
+        public string RawValues { get; set; }
 
         /// <summary>
-        /// Utility property to allow interfacing with <see cref="Values"/> using the proper type.
+        /// Utility property to allow interfacing with <see cref="RawValues"/> using the proper type.
         /// </summary>
         [NotMapped]
-        public IEnumerable<int> IntegerValues // RENAME TO 'Values'
+        public IEnumerable<int> Values
         {
-            get { return this.integerValues; }
+            get { return this.values; }
 
             set
             {
-                this.integerValues = value;
+                this.values = value;
 
                 if (value == null)
                 {
-                    this.Values = null;
+                    this.RawValues = null;
                     return;
                 }
 
                 if (value.Count() == 0)
                 {
-                    this.Values = string.Empty;
+                    this.RawValues = string.Empty;
                     return;
                 }
 
-                this.Values = value.Select(n => n.ToString()).Aggregate((string a, string b) => $"{a},{b}");
+                this.RawValues = value.Select(n => n.ToString()).Aggregate((string a, string b) => $"{a},{b}");
             }
+        }
+
+        /// <summary>
+        /// Makes sure that, in case <see cref="Values"/> was explicitely assigned,
+        /// <see cref="IntegerValues"/> gets the correct value.
+        /// </summary>
+        /// <returns>The same object after the update to <see cref="IntegerValues"/>.</returns>
+        public SortingJob SyncValues()
+        {
+            if (this.RawValues == null)
+            {
+                this.values = null;
+            }
+            else if (this.RawValues.Length == 0)
+            {
+                this.values = new int[0];
+            }
+            else
+            {
+                this.values = this.RawValues.Split(",").Select(s =>
+                {
+                    var success = int.TryParse(s, out int v);
+                    return success ? v : 0;
+                });
+            }
+
+            return this;
         }
     }
 }

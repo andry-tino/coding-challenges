@@ -8,38 +8,55 @@ namespace Challenge.WebIntSorter.UnitTests
     public class SortingJobUnitTest
     {
         [TestMethod]
-        public void IntegerValuesMapToValues()
+        public void ValuesMapToValues()
         {
             var job = new SortingJob();
             var sequence = new int[] { 1, 3 };
-            job.IntegerValues = sequence.Clone() as int[];
+            job.Values = sequence.Clone() as int[];
 
-            Assert.IsTrue(Enumerable.SequenceEqual<int>(sequence, job.IntegerValues), "Unexpected stored value");
-            Assert.AreEqual("1,3", job.Values, "Values were not properly mapped from IntegerValues");
+            Assert.IsTrue(Enumerable.SequenceEqual<int>(sequence, job.Values), "Unexpected stored value");
+            Assert.AreEqual("1,3", job.RawValues, "RawValues were not properly mapped from IntegerValues");
         }
 
         [TestMethod]
-        public void WhenCreatedThenIntegerValuesIsNull()
+        public void WhenValuesIsNullThenRawValuesIsNull()
         {
             var job = new SortingJob();
-            Assert.IsNull(job.IntegerValues, "IntegerValues should be null when Values is null");
+            job.Values = null;
+            Assert.IsNull(job.RawValues, "Values should be null when RawValues is null");
         }
 
         [TestMethod]
-        public void WhenIntegerValuesIsNullThenValuesIsNull()
+        public void WhenValuesIsEmptyCollectionThenRawValuesIsEmptyString()
         {
             var job = new SortingJob();
-            job.IntegerValues = null;
-            Assert.IsNull(job.Values, "Values should be null when Values is null");
+            job.Values = new int[0];
+            Assert.IsNotNull(job.RawValues, "RawValues should not be null when IntegerValues is empty");
+            Assert.AreEqual(0, job.RawValues.Length, "RawValues should be empty string when IntegerValues is empty");
         }
 
         [TestMethod]
-        public void WhenIntegerValuesIsEmptyCollectionThenValuesIsEmptyString()
+        public void WhenRawValuesIsModifiedAndSyncCalledThenValuesHasCorrectValue()
         {
             var job = new SortingJob();
-            job.IntegerValues = new int[0];
-            Assert.IsNotNull(job.Values, "Values should not be null when IntegerValues is empty");
-            Assert.AreEqual(0, job.Values.Length, "Values should be empty string when IntegerValues is empty");
+            job.RawValues = "4,3";
+            job.SyncValues();
+            Assert.IsNotNull(job.Values, "IntegerValues should not be null");
+            Assert.IsTrue(Enumerable.SequenceEqual<int>(new int[] { 4, 3 }, job.Values), "Sync failed");
+        }
+
+        [TestMethod]
+        public void WhenCreatedThenRawValuesIsNull()
+        {
+            var job = new SortingJob();
+            Assert.IsNull(job.RawValues, "RawValues should be null");
+        }
+
+        [TestMethod]
+        public void WhenCreatedThenValuesIsNull()
+        {
+            var job = new SortingJob();
+            Assert.IsNull(job.Values, "IntegerValues should be null when RawValues is null");
         }
 
         [TestMethod]

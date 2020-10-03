@@ -62,7 +62,7 @@ namespace Challenge.WebIntSorter.Controllers
         public async Task<ActionResult> Post(SortingJob input)
         {
             // Validate input
-            var sequence = input.IntegerValues;
+            var sequence = input.Values;
             if (sequence == null)
             {
                 this.logger.LogError($"Numeric sequence provided is null, cannot enqueue job");
@@ -88,8 +88,7 @@ namespace Challenge.WebIntSorter.Controllers
                 var job = new SortingJob()
                 {
                     Duration = -1,
-                    Status = SortingJobStatus.Pending,
-                    Values = null
+                    Status = SortingJobStatus.Pending
                 };
 
                 try
@@ -104,7 +103,7 @@ namespace Challenge.WebIntSorter.Controllers
                             var sortedSequence = await input.SortIntegers();
                             stopwatch.Stop();
 
-                            job.IntegerValues = sortedSequence;
+                            job.Values = sortedSequence;
                             job.Status = SortingJobStatus.Completed;
                             job.Duration = stopwatch.ElapsedMilliseconds;
                             this.dbContext.SaveChanges();
