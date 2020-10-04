@@ -12,7 +12,7 @@ const longRandomArraySize = 1000;
 function App() {
   const [outText, setOutText] = useState("Type your sequence on the left box and then leave...");
   const [srcText, setSrcText] = useState("");
-  const [jobId, setOutJobId] = useState("Job id");
+  const [jobId, setJobId] = useState("");
   const [jobState, setOutJobState] = useState("");
   const [port, setPort] = useState(5001);
   const [calloutVisible, setCalloutVisible] = useState(false);
@@ -27,6 +27,11 @@ function App() {
       padding: ".5em"
     }
   });
+  const textFieldStyles = {
+    wrapper: {
+      textAlign: "left"
+    }
+  };
 
   return (
     <Stack
@@ -74,7 +79,7 @@ function App() {
         Inspect jobs
       </Text>
       <Stack horizontal gap={15} horizontalAlign="center">
-        <TextField value={jobId}></TextField>
+        <TextField styles={textFieldStyles} label="Job id" value={jobId}></TextField>
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
       </Stack>
       { calloutVisible &&
@@ -119,9 +124,16 @@ function App() {
         }
       )
     }).then(res => {
-      setOutText("Hellooooooo");
+      setOutText("Completed!");
+      return res.json();
+    }).then(data => {
+      const id = data["id"];
+      if (id !== undefined) {
+        setOutText(`Job id: '${id}'`);
+        setJobId(id);
+      }
     }).catch(err => {
-      setOutText(`Error: ${err}`);
+      setOutText(`An error occurred. ${err}`);
     }).finally(() => {
       setInputEnabled(true);
       setSpinnerVisible(false);
