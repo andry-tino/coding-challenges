@@ -15,20 +15,17 @@ namespace Challenge.WebIntSorter
         /// </summary>
         /// <param name="values">The values to sort.</param>
         /// <returns>The (sorted) sequence of values.</returns>
-        public static async Task<IEnumerable<int>> SortIntegers(this IEnumerable<int> values)
+        public static IEnumerable<int> SortIntegers(this IEnumerable<int> values)
         {
             if (values == null)
             {
                 return null;
             }
 
-            return await Task<IEnumerable<int>>.Run(() =>
-            {
-                var sortedValues = new List<int>(values);
-                sortedValues.Sort();
+            var sortedValues = new List<int>(values);
+            sortedValues.Sort();
 
-                return sortedValues;
-            });
+            return sortedValues;
         }
     }
 }

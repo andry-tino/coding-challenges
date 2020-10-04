@@ -66,7 +66,7 @@ namespace Challenge.WebIntSorter.Controllers
         /// be allowed to query the job status via the <see cref="Get"/> method.
         /// </remarks>
         [HttpPost]
-        public async Task<ActionResult> Post(SortingJob input)
+        public async Task<ActionResult> PostAsync(SortingJob input)
         {
             // Validate input
             var sequence = input.Values;
@@ -77,70 +77,71 @@ namespace Challenge.WebIntSorter.Controllers
             }
 
             // Start background job
-            var jobId = await this.CreateAsync(sequence);
+            var job = this.Create(sequence);
+            Task.Run(() => this.EnqueueJob(job));
 
-            this.logger.LogInformation($"Enqueued sorting job '{jobId}' with {sequence.Count()} elements to sort");
+            this.logger.LogInformation($"Enqueued sorting job '{job.Id}' with {sequence.Count()} elements to sort");
 
             // Return response
-            return CreatedAtAction("post", new { id = jobId });
+            return CreatedAtAction("post", new { id = job.Id });
         }
 
-        private async Task<long> CreateAsync(IEnumerable<int> input)
+        private SortingJob Create(IEnumerable<int> input)
         {
-            return await Task<long>.Run(async () =>
+            var job = new SortingJob()
             {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                Duration = -1,
+                Status = SortingJobStatus.Pending,
+                OriginalValues = input
+            };
 
-                var job = new SortingJob()
-                {
-                    Duration = -1,
-                    Status = SortingJobStatus.Pending,
-                    OriginalValues = input
-                };
+            this.dbContext.AddJob(job);
+            // Save the job now, later it will be updated
+            // SaveChanges will assign an id
+            this.dbContext.SaveChanges();
 
+            return job;
+        }
+
+        private void EnqueueJob(SortingJob job)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                // Execute the sorting logic
+                IEnumerable<int> sortedSequence = null;
                 try
                 {
-                    this.dbContext.AddJob(job);
-                    // Save the job now, later it will be updated
-                    this.dbContext.SaveChanges();
-
-                    // Execute the sorting logic
-                    IEnumerable<int> sortedSequence = null;
-                    try
-                    {
-                        sortedSequence = await input.SortIntegers();
-                        job.Status = SortingJobStatus.Completed;
-                    }
-                    catch (Exception e)
-                    {
-                        this.logger.LogError($"Error while sorting when executing job '{job.Id}': {e.Message}. Operation continues");
-                        job.Status = SortingJobStatus.Error;
-                    }
-                    // Tracked time: until sorting is complete
-                    stopwatch.Stop();
-
-                    // Update the job
-                    job.Values = sortedSequence;
-                    job.Duration = stopwatch.ElapsedMilliseconds;
-                    this.dbContext.SaveChanges();
+                    sortedSequence = job.OriginalValues.SortIntegers();
+                    job.Status = SortingJobStatus.Completed;
                 }
                 catch (Exception e)
                 {
-                    this.logger.LogError($"Error while executing job '{job.Id}': {e.Message}");
-                    throw e;
+                    this.logger.LogError($"Error while sorting when executing job '{job.Id}': {e.Message}. Operation continues");
+                    job.Status = SortingJobStatus.Error;
                 }
-                finally
-                {
-                    if (stopwatch.IsRunning)
-                    {
-                        stopwatch.Stop();
-                    }
-                }
+                // Tracked time: until sorting is complete
+                stopwatch.Stop();
 
-                // Return the id
-                return job.Id;
-            });
+                // Update the job
+                job.Values = sortedSequence;
+                job.Duration = stopwatch.ElapsedMilliseconds;
+                this.dbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError($"Error while executing job '{job.Id}': {e.Message}");
+                throw e;
+            }
+            finally
+            {
+                if (stopwatch.IsRunning)
+                {
+                    stopwatch.Stop();
+                }
+            }
         }
     }
 }
