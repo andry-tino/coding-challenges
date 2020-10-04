@@ -16,7 +16,7 @@ namespace Challenge.WebIntSorter.Controllers
         [Route("/error")]
         public IActionResult Get()
         {
-            return Problem("S * *t happens: (");
+            return Problem("A problem occurred and the operation cannot be completed");
         }
     }
 }
