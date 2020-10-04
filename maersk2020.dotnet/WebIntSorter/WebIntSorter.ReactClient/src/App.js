@@ -15,7 +15,8 @@ function App() {
   const [jobId, setJobId] = useState("");
   const [jobState, setJobState] = useState("");
   const [port, setPort] = useState(5001);
-  const [calloutVisible, setCalloutVisible] = useState(false);
+  const [calloutPortVisible, setCalloutPortVisible] = useState(false);
+  const [calloutClientHostVisible, setCalloutClientHostVisible] = useState(false);
   const [spinnerTopVisible, setSpinnerTopVisible] = useState(false);
   const [spinnerBottomVisible, setSpinnerBottomVisible] = useState(false);
   const [inputTopAreaEnabled, setInputTopAreaEnabled] = useState(true);
@@ -31,6 +32,7 @@ function App() {
   }, [jobId]);
 
   const portLinkCssClassName = "port-link";
+  const clientHostLinkCssClassName = "clienthost-link";
   const calloutStyles = mergeStyleSets({
     callout: {
       maxWidth: 300,
@@ -48,6 +50,8 @@ function App() {
       textAlign: "left"
     }
   };
+
+  const clientHost = window.location.host;
 
   initializeIcons();
 
@@ -69,7 +73,7 @@ function App() {
       <Text variant="xxLarge" styles={boldStyle}>
         Welcome to WebIntSorter client
       </Text>
-      <Text variant="large">Make sure the server is running on port <Link className={portLinkCssClassName} onClick={onPortLinkClick}>{port}</Link> your localhost.</Text>
+    <Text variant="large">Make sure the server is running on port <Link className={portLinkCssClassName} onClick={onPortLinkClick}>{port}</Link> of your localhost. The client is running on <Link className={clientHostLinkCssClassName} onClick={onClientHostLinkClick}>{clientHost}</Link>.</Text>
       <Text variant="large" styles={boldStyle}>
         Enqueue jobs
       </Text>
@@ -131,20 +135,34 @@ function App() {
         <Separator vertical />
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
       </Stack>
-      { calloutVisible &&
-        <Callout target={`.${portLinkCssClassName}`} onDismiss={onCalloutDismissClick} role="alertdialog" gapSpace={0} className={calloutStyles.callout} setInitialFocus>
+      { calloutPortVisible &&
+        <Callout target={`.${portLinkCssClassName}`} onDismiss={onCalloutPortDismissClick} role="alertdialog" gapSpace={0} className={calloutStyles.callout} setInitialFocus>
           <TextField label="Server port" value={port} onChange={onPortTextBoxChange}></TextField>
+        </Callout>
+      }
+      { calloutClientHostVisible &&
+        <Callout target={`.${clientHostLinkCssClassName}`} onDismiss={onCalloutClientHostDismissClick} role="alertdialog" gapSpace={0} className={calloutStyles.callout} setInitialFocus>
+          <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"AlertSolid"} />}
+            activityDescription={"The WebIntSorter server, by default, allows 'localhost:3000' in CORS policy. If this client is running on a different origin, you need to configure the server to allow that."} />
         </Callout>
       }
     </Stack>
   );
 
   function onPortLinkClick() {
-    setCalloutVisible(true);
+    setCalloutPortVisible(true);
   }
 
-  function onCalloutDismissClick() {
-    setCalloutVisible(false);
+  function onCalloutPortDismissClick() {
+    setCalloutPortVisible(false);
+  }
+
+  function onClientHostLinkClick() {
+    setCalloutClientHostVisible(true);
+  }
+
+  function onCalloutClientHostDismissClick() {
+    setCalloutClientHostVisible(false);
   }
 
   function onSrcTextChange(e) {
