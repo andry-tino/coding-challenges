@@ -86,6 +86,10 @@ namespace Challenge.WebIntSorter
         /// <see cref="IntegerValues"/> gets the correct value.
         /// </summary>
         /// <returns>The same object after the update to <see cref="IntegerValues"/>.</returns>
+        /// <remarks>
+        /// Use this method in models when implementing derivates of
+        /// <see cref="Microsoft.EntityFrameworkCore.DbContext"/>.
+        /// </remarks>
         public SortingJob SyncValues()
         {
             if (this.RawValues == null)

@@ -37,6 +37,8 @@ namespace Challenge.WebIntSorter.Models
         /// <returns></returns>
         public SortingJob RetrieveJob(long id)
         {
+            // Call SyncValues to make sure the collection properties
+            // get populated as only the raw values are persisted in DB
             return this.Jobs.FirstOrDefault(job => job.Id == id)?.SyncValues();
         }
 
@@ -46,6 +48,8 @@ namespace Challenge.WebIntSorter.Models
         /// <returns></returns>
         public IEnumerable<SortingJob> RetrieveJobs()
         {
+            // Call SyncValues to make sure the collection properties
+            // get populated as only the raw values are persisted in DB
             return this.Jobs.Select(job => job.SyncValues()).ToArray();
         }
     }
