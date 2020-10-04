@@ -80,9 +80,9 @@ namespace Challenge.WebIntSorter
             options.AddPolicy(Constants.Service.CorsReactClientAllowSpecificOriginsPolicyName, builder =>
             {
                 builder
-                    .WithOrigins("http://localhost:3000")
-                    .WithMethods("POST", "GET", "PUT")
-                    .WithHeaders("Content-Type");
+                    .WithOrigins("http://localhost:3000") // Access-Control-Allow-Origin
+                    .WithMethods("POST", "GET", "PUT") // Access-Control-Allow-Methods
+                    .WithHeaders("Content-Type"); // Access-Control-Allow-Headers
             });
         }
 
