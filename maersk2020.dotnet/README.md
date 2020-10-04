@@ -140,4 +140,4 @@ The response:
 
 It will include only one object representing the requested job.
 
-If the requested job (the job ID) does not exist, the response body will be empty.
+If the requested job (the job ID) does not exist, the response body will be empty and the response status will be `204 No Content`.
