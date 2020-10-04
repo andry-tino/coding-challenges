@@ -15,7 +15,7 @@ namespace Challenge.WebIntSorter
         /// </summary>
         /// <param name="values">The values to sort.</param>
         /// <returns>The (sorted) sequence of values.</returns>
-        public static IEnumerable<int> SortIntegers(this IEnumerable<int> values)
+        public static IList<int> SortIntegers(this IEnumerable<int> values)
         {
             if (values == null)
             {

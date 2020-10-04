@@ -21,17 +21,17 @@ namespace Challenge.WebIntSorter.Controllers
     public class SortingController : ControllerBase
     {
         private readonly ILogger<SortingController> logger;
-        private readonly SortingJobContext dbContext;
+        private readonly SortingJobCollection jobsCollection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SortingController"/> class.
         /// </summary>
         /// <param name="logger">The logger passed as dependency.</param>
-        /// <param name="dbContext">The database context passed as dependency.</param>
-        public SortingController(ILogger<SortingController> logger, SortingJobContext dbContext)
+        /// <param name="jobsCollection">The collection used to store jobs across different calls.</param>
+        public SortingController(ILogger<SortingController> logger, SortingJobCollection jobsCollection)
         {
             this.logger = logger;
-            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            this.jobsCollection = jobsCollection;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Challenge.WebIntSorter.Controllers
         [HttpGet]
         public IEnumerable<SortingJob> GetAll()
         {
-            return this.dbContext.RetrieveJobs();
+            return this.jobsCollection.RetrieveJobs();
         }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace Challenge.WebIntSorter.Controllers
         /// <param name="id">The id of the job to look for.</param>
         /// <returns>The requested <see cref="SortingJob"/>.</returns>
         [HttpGet("{id}")]
-        public SortingJob Get(long id)
+        public SortingJob Get(string id)
         {
-            return this.dbContext.RetrieveJob(id);
+            return this.jobsCollection.RetrieveJob(id);
         }
 
         /// <summary>
@@ -66,14 +66,13 @@ namespace Challenge.WebIntSorter.Controllers
         /// be allowed to query the job status via the <see cref="Get"/> method.
         /// </remarks>
         [HttpPost]
-        public async Task<ActionResult> PostAsync(SortingJob input)
+        public async Task<ActionResult> PostAsync(IEnumerable<int> sequence)
         {
             // Validate input
-            var sequence = input.Values;
             if (sequence == null)
             {
                 this.logger.LogError($"Numeric sequence provided is null, cannot enqueue job");
-                throw new ArgumentException("A numeric sequence is required", nameof(input));
+                throw new ArgumentException("A numeric sequence is required", nameof(sequence));
             }
 
             // Start background job
@@ -88,17 +87,9 @@ namespace Challenge.WebIntSorter.Controllers
 
         private SortingJob Create(IEnumerable<int> input)
         {
-            var job = new SortingJob()
-            {
-                Duration = -1,
-                Status = SortingJobStatus.Pending,
-                OriginalValues = input
-            };
+            var job = new SortingJob(input);
 
-            this.dbContext.AddJob(job);
-            // Save the job now, later it will be updated
-            // SaveChanges will assign an id
-            this.dbContext.SaveChanges();
+            this.jobsCollection.AddJob(job);
 
             return job;
         }
@@ -111,36 +102,21 @@ namespace Challenge.WebIntSorter.Controllers
             try
             {
                 // Execute the sorting logic
-                IEnumerable<int> sortedSequence = null;
-                try
-                {
-                    sortedSequence = job.OriginalValues.SortIntegers();
-                    job.Status = SortingJobStatus.Completed;
-                }
-                catch (Exception e)
-                {
-                    this.logger.LogError($"Error while sorting when executing job '{job.Id}': {e.Message}. Operation continues");
-                    job.Status = SortingJobStatus.Error;
-                }
-                // Tracked time: until sorting is complete
-                stopwatch.Stop();
-
-                // Update the job
-                job.Values = sortedSequence;
-                job.Duration = stopwatch.ElapsedMilliseconds;
-                this.dbContext.SaveChanges();
+                job.Sort();
+                job.Status = SortingJobStatus.Completed;
             }
-            catch (Exception e)
+            catch (InvalidOperationException e)
             {
-                this.logger.LogError($"Error while executing job '{job.Id}': {e.Message}");
+                this.logger.LogError($"Error while executing sorting job '{job.Id}': {e.Message}");
                 throw e;
             }
             finally
             {
-                if (stopwatch.IsRunning)
-                {
-                    stopwatch.Stop();
-                }
+                // Tracked time: until sorting is complete
+                stopwatch.Stop();
+
+                // Update the job
+                job.Duration = stopwatch.ElapsedMilliseconds;
             }
         }
     }

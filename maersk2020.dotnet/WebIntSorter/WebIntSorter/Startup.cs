@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Challenge.WebIntSorter.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Challenge.WebIntSorter
@@ -37,11 +36,8 @@ namespace Challenge.WebIntSorter
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add in memory database to store jobs
-            services.AddDbContext<SortingJobContext>(options => options.UseInMemoryDatabase("JobsDb"));
-
-            // Add a custom DbContext to access the database of jobs
-            services.AddScoped<SortingJobContext>();
+            var jobsCollection = new SortingJobCollection();
+            services.AddSingleton(jobsCollection);
 
             // Add CORS capabilities
             services.AddCors(this.ConfigureCors);

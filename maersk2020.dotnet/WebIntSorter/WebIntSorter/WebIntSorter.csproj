@@ -6,9 +6,4 @@
     <RootNamespace>Challenge.WebIntSorter</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.8" />
-  </ItemGroup>
-
-
 </Project>
