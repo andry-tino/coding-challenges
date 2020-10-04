@@ -27,7 +27,9 @@ Once installed, run:
 serve -s build -l 3000
 ```
 
-Open up yor favorite browser, and navigate to: `http://localhost:3000`
+Open up yor favorite browser, and navigate to: `http://localhost:3000`.
+
+![The React client](client.png "Overview of the React client")
 
 The client is ready to be used.
 
