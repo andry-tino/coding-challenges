@@ -15,6 +15,12 @@ namespace Challenge.WebIntSorter
         /// <summary>
         /// The job is done and its result can be retrieved.
         /// </summary>
-        Completed = 1
+        Completed = 1,
+
+        /// <summary>
+        /// The job is not running anymore as it terminated due to an error.
+        /// The result cannot be retrieved.
+        /// </summary>
+        Error = 2
     }
 }

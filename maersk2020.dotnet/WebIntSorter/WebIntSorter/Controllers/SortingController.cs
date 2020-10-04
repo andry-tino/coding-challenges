@@ -82,7 +82,7 @@ namespace Challenge.WebIntSorter.Controllers
 
         private async Task<long> CreateAsync(IEnumerable<int> input)
         {
-            return await Task<long>.Run(() =>
+            return await Task<long>.Run(async () =>
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -96,20 +96,28 @@ namespace Challenge.WebIntSorter.Controllers
                 try
                 {
                     this.dbContext.AddJob(job);
-                    this.dbContext
-                        // Save to DB, do not wait for this
-                        .SaveChangesAsync() // An Id will be automatically created here
-                        // Then continue to sorting (still non-blocking)
-                        .ContinueWith(async antecedent =>
-                        {
-                            var sortedSequence = await input.SortIntegers();
-                            stopwatch.Stop();
+                    // Save the job now, later it will be updated
+                    this.dbContext.SaveChanges();
 
-                            job.Values = sortedSequence;
-                            job.Status = SortingJobStatus.Completed;
-                            job.Duration = stopwatch.ElapsedMilliseconds;
-                            this.dbContext.SaveChanges();
-                        });
+                    // Execute the sorting logic
+                    IEnumerable<int> sortedSequence = null;
+                    try
+                    {
+                        sortedSequence = await input.SortIntegers();
+                        job.Status = SortingJobStatus.Completed;
+                    }
+                    catch (Exception e)
+                    {
+                        this.logger.LogError($"Error while sorting when executing job '{job.Id}': {e.Message}. Operation continues");
+                        job.Status = SortingJobStatus.Error;
+                    }
+                    // Tracked time: until sorting is complete
+                    stopwatch.Stop();
+
+                    // Update the job
+                    job.Values = sortedSequence;
+                    job.Duration = stopwatch.ElapsedMilliseconds;
+                    this.dbContext.SaveChanges();
                 }
                 catch (Exception e)
                 {
