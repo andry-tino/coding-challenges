@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, Text, FontWeights, TextField, ActivityItem, Icon, initializeIcons, DefaultButton, Separator, PrimaryButton, Link, Callout, Spinner, SpinnerSize, mergeStyleSets } from 'office-ui-fabric-react';
 import './App.css';
 import { array2str, createRandomSequence } from "./utils"
@@ -17,8 +17,18 @@ function App() {
   const [port, setPort] = useState(5001);
   const [calloutVisible, setCalloutVisible] = useState(false);
   const [spinnerVisible, setSpinnerVisible] = useState(false);
-  const [inputEnabled, setInputEnabled] = useState(true);
-  const [enqueueButtonEnabled, setEnqueueButtonEnabled] = useState(true);
+  const [inputTopAreaEnabled, setInputTopAreaEnabled] = useState(true);
+  const [inputBottomAreaEnabled, setInputBottomAreaEnabled] = useState(true);
+  const [enqueueButtonEnabled, setEnqueueButtonEnabled] = useState(false); // Sync with srcText
+  const [infoButtonEnabled, setInfoButtonEnabled] = useState(false); // Sync with jobId
+
+  useEffect(() => {
+    updateEnqueueButtonEnabled(srcText);
+  }, [srcText]);
+  useEffect(() => {
+    updateInfoButtonEnabled(jobId);
+    setInfoButtonEnabled(true);
+  }, [jobId]);
 
   const portLinkCssClassName = "port-link";
   const calloutStyles = mergeStyleSets({
@@ -72,14 +82,14 @@ function App() {
           <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
             activityDescription={"Enqueue a sorting job."} />
           <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"Info"} />}
-            activityDescription={"If successful, the job id will be copied in the section below ready for action."} />
+            activityDescription={"If successful, the job id will be copied in the section below, ready for action."} />
         </Stack>
         <Stack gap={15} verticalAlign="stretch">
-          <DefaultButton text="Random sequence" onClick={onButtonRndClick} disabled={!inputEnabled}></DefaultButton>
-          <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick} disabled={!inputEnabled}></DefaultButton>
+          <DefaultButton text="Random sequence" onClick={onButtonRndClick} disabled={!inputTopAreaEnabled}></DefaultButton>
+          <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick} disabled={!inputTopAreaEnabled}></DefaultButton>
           <Stack horizontal horizontalAlign="space-between">
             <Stack.Item grow={1}>
-              <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
+              <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputTopAreaEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
             </Stack.Item>
             <Stack.Item grow={0}>
               { spinnerVisible &&
@@ -89,7 +99,7 @@ function App() {
           </Stack>
         </Stack>
         <Separator vertical />
-        <TextField multiline rows={7} onChange={updateSrcTextState} value={srcText} disabled={!inputEnabled}></TextField>
+        <TextField multiline rows={7} onChange={onSrcTextChange} value={srcText} disabled={!inputTopAreaEnabled}></TextField>
         <TextField multiline readOnly disabled rows={7} value={outText}></TextField>
       </Stack>
       <Separator styles={{root:{width:"100%"}}} />
@@ -106,8 +116,8 @@ function App() {
           activityDescription={"Request info for the specified job."} />
       </Stack>
         <Stack gap={15}>
-          <TextField styles={textFieldStyles} label="Job id" value={jobId}></TextField>
-          <PrimaryButton text="Get job info" disabled={false} onClick={onButtonInfoClick}></PrimaryButton>
+          <TextField styles={textFieldStyles} label="Job id" onChange={onJobIdChange} value={jobId} disabled={!inputBottomAreaEnabled}></TextField>
+          <PrimaryButton text="Get job info" disabled={!infoButtonEnabled || !inputBottomAreaEnabled} onClick={onButtonInfoClick}></PrimaryButton>
         </Stack>
         <Separator vertical />
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
@@ -128,17 +138,34 @@ function App() {
     setCalloutVisible(false);
   }
 
-  function updateSrcTextState(e) {
-    setSrcText(e.target.value);
+  function onSrcTextChange(e) {
+    const value = e.target.value;
+    setSrcText(value);
+    updateEnqueueButtonEnabled(value);
+  }
+
+  function onJobIdChange(e) {
+    const value = e.target.value;
+    setJobId(value);
+    updateInfoButtonEnabled(value);
+  }
+
+  function updateEnqueueButtonEnabled(srcTextValue) {
+    setEnqueueButtonEnabled(srcTextValue !== undefined && srcTextValue.length > 0);
+  }
+
+  function updateInfoButtonEnabled(jobIdValue) {
+    setInfoButtonEnabled(jobIdValue !== undefined && jobIdValue.length > 0);
   }
 
   function onPortTextBoxChange(e) {
-    setPort(e.target.value);
+    const value = e.target.value;
+    setPort(value);
   }
 
   function onButtonEnqueueClick() {
     setOutText("Processing...");
-    setInputEnabled(false);
+    setInputTopAreaEnabled(false);
     setSpinnerVisible(true);
 
     fetch(`${serverAddressHost}:${port}/api/sorting`, {
@@ -165,7 +192,7 @@ function App() {
     }).catch(err => {
       setOutText(`An error occurred. ${err}`);
     }).finally(() => {
-      setInputEnabled(true);
+      setInputTopAreaEnabled(true);
       setSpinnerVisible(false);
     });
   }
