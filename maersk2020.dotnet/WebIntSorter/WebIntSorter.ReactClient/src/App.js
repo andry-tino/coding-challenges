@@ -35,10 +35,10 @@ function App() {
       verticalFill
       styles={{
         root: {
-          width: '960px',
-          margin: '0 auto',
-          textAlign: 'center',
-          color: '#605e5c'
+          width: "960px",
+          margin: "0 auto",
+          textAlign: "center",
+          color: "#605e5c"
         }
       }}
       gap={15}
@@ -69,7 +69,7 @@ function App() {
         <TextField multiline rows={7} onChange={updateSrcTextState} value={srcText} disabled={!inputEnabled}></TextField>
         <TextField multiline readOnly disabled rows={7} value={outText}></TextField>
       </Stack>
-      <Separator />
+      <Separator styles={{root:{width:"100%"}}} />
       <Text variant="large" styles={boldStyle}>
         Inspect jobs
       </Text>
