@@ -66,7 +66,7 @@ namespace Challenge.WebIntSorter.Controllers
         /// be allowed to query the job status via the <see cref="Get"/> method.
         /// </remarks>
         [HttpPost]
-        public async Task<ActionResult> PostAsync(IEnumerable<int> sequence)
+        public ActionResult PostAsync(IEnumerable<int> sequence)
         {
             // Validate input
             if (sequence == null)
