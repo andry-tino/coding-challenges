@@ -46,6 +46,9 @@ namespace Challenge.WebIntSorter
         /// <remarks>
         /// Do not use this when getting or setting the values in code,
         /// use <see cref="Values"/> instead.
+        /// In order to properly emit the values as a JSON array, property
+        /// <see cref="Values"/> is serialized while this property will not
+        /// be to avoid chattiness in the API.
         /// </remarks>
         [JsonIgnore]
         public string RawValues { get; set; }
