@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 using Challenge.WebIntSorter.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Challenge.WebIntSorter
 {
@@ -38,6 +39,7 @@ namespace Challenge.WebIntSorter
         {
             services.AddDbContext<SortingJobContext>(options => options.UseInMemoryDatabase("JobsDb"));
             services.AddScoped<SortingJobContext>();
+            services.AddCors(this.ConfigureCors);
 
             services.AddControllers()
                 .AddJsonOptions(this.ConfigureJsonSerialization);
@@ -63,11 +65,24 @@ namespace Challenge.WebIntSorter
 
             app.UseRouting();
 
+            app.UseCors(Constants.Service.CorsReactClientAllowSpecificOriginsPolicyName);
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+        }
+
+        private void ConfigureCors(CorsOptions options)
+        {
+            options.AddPolicy(Constants.Service.CorsReactClientAllowSpecificOriginsPolicyName, builder =>
+            {
+                builder
+                    .WithOrigins("http://localhost:3000")
+                    .WithMethods("POST", "GET", "PUT")
+                    .WithHeaders("Content-Type");
             });
         }
 

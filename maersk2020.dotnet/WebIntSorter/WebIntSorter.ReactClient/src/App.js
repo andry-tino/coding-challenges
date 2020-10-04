@@ -3,8 +3,8 @@ import { Stack, Text, FontWeights, TextField, DefaultButton, Separator, PrimaryB
 import './App.css';
 import { array2str, createRandomSequence } from "./utils"
 
-const port = 5001;
-const serverAddress = `https://localhost:${port}`;
+// Do not use http, this will trigger a redirect and CORS does not allow that
+const serverAddressHost = `https://localhost`;
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const normalRandomArraySize = 100;
 const longRandomArraySize = 1000;
@@ -106,8 +106,13 @@ function App() {
     setInputEnabled(false);
     setSpinnerVisible(true);
 
-    fetch(`${serverAddress}/sorting`, {
+    fetch(`${serverAddressHost}:${port}/api/sorting`, {
       method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "*/*"
+      },
       body: JSON.stringify(
         {
           values: srcText.split(",").map(x=>+x)

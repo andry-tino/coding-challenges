@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Cors;
 
 using Challenge.WebIntSorter.Models;
 
@@ -15,6 +16,7 @@ namespace Challenge.WebIntSorter.Controllers
     /// API controller responsible for routing here the calls to "/api/sorting".
     /// </summary>
     [ApiController]
+    [EnableCors(Constants.Service.CorsReactClientAllowSpecificOriginsPolicyName)]
     [Route("api/[controller]")]
     public class SortingController : ControllerBase
     {
