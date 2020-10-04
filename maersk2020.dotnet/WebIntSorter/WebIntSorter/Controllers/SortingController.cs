@@ -60,6 +60,11 @@ namespace Challenge.WebIntSorter.Controllers
         /// </summary>
         /// <param name="input">The input <see cref="SortingJob"/> which must ensure to have values defined.</param>
         /// <returns>The id of the created job.</returns>
+        /// <remarks>
+        /// In order to optimize for responsiveness, jobs to sort sequences are run asynchronously.
+        /// This way, the requestor will not have to wait for the job to be completed, but it will
+        /// be allowed to query the job status via the <see cref="Get"/> method.
+        /// </remarks>
         [HttpPost]
         public async Task<ActionResult> Post(SortingJob input)
         {
