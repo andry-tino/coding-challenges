@@ -27,7 +27,6 @@ function App() {
   }, [srcText]);
   useEffect(() => {
     updateInfoButtonEnabled(jobId);
-    setInfoButtonEnabled(true);
   }, [jobId]);
 
   const portLinkCssClassName = "port-link";
@@ -155,7 +154,7 @@ function App() {
   }
 
   function updateInfoButtonEnabled(jobIdValue) {
-    setInfoButtonEnabled(jobIdValue !== undefined && jobIdValue.length > 0);
+    setInfoButtonEnabled(jobIdValue !== undefined && parseInt(jobIdValue) > 0);
   }
 
   function onPortTextBoxChange(e) {
