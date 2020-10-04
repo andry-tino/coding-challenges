@@ -13,11 +13,19 @@ To interact with the web API, you will need either:
 - An HTTP client (fx. [Postman](https://www.postman.com/), [Fiddler](https://www.telerik.com/download/fiddler), etc.).
 - The [WebIntSorter ReactClient](WebIntSorter/WebIntSorter.ReactClient/README.md).
 
-## Building the server
+## Building the server in Visual Studio
 To build the server:
 
 1. Open the solution `WebIntSorter.sln` in Visual Studio.
-2. Build the solution by selecting: `Build`, `Build Solution` in Visual Studio.
+2. Select configuration `Release`.
+3. Build the solution by selecting: `Build`, `Build Solution` in Visual Studio.
+
+## Building the server using `dotnet`
+To build the server:
+
+1. Open a new shell window.
+2. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
+3. Run command: `dotnet publish -c Release`.
 
 ## Running the server
 To run the server you can either:
@@ -33,14 +41,22 @@ If you choose to build on your own the solution, after doing so, do the followin
 1. Select the `WebIntSorter` configuration.
 2. Select the `Run` button.
 
+### Running using `dotnet`
+If you want to use the commandline:
+
+1. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
+2. Run command: `dotnet .\bin\Release\netcoreapp3.1\Maersk2020DotNet.WebIntSorter.dll`.
+
 ## Using WebIntSorter
 WIS is a server exposing a web API to sort integer sequences.
 
-- One route is available: `/api/sorting`.
-- Allowed verbs (HTTP methods) are:
+- Two routes are available: `/api`, `/api/sorting`.
+- Allowed verbs  (HTTP methods) for `/api/sorting` are:
     - `POST`: Enqueue a sorting job.
 	- `GET`: Get info about all the enqueued jobs or one specific job.
 - `Content-Type`: `application/json`.
+
+Submit a `GET` request against `/api` to get a list of all supported routes in the API.
 
 ### Enqueueing a sorting job
 To enqueue a sorting job, submit a `POST` request to `/api/sorting` by specifying the sequence to sort onside an array of integers:
@@ -80,7 +96,7 @@ The response:
 		"id": 6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af,
 		"timestamp": "2020-10-04T17:07:39.1873311+02:00",
 		"duration": 150,
-        "status": 1,
+		"status": 1,
 		"values": [...],
 		"originalValues": [...]
 	},
