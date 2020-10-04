@@ -12,6 +12,12 @@ To be able to run this web application, you need the following:
 In the project directory, run:
 
 ```
+npm install
+```
+
+This will install all required node modules. Then run:
+
+```
 npm run build
 ```
 
