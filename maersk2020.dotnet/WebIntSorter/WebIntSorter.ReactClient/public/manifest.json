@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "WebIntSorter web client",
+  "name": "A simple React App for WebIntSorter",
   "icons": [
     {
       "src": "favicon.ico",
