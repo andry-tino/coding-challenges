@@ -36,6 +36,7 @@ namespace Challenge.WebIntSorter
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add in memory collection of jobs
             var jobsCollection = new SortingJobCollection();
             services.AddSingleton(jobsCollection);
 

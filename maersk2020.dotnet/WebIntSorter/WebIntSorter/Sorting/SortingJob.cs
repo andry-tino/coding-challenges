@@ -11,6 +11,10 @@ namespace Challenge.WebIntSorter
     {
         private List<int> values;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SortingJob"/> class.
+        /// </summary>
+        /// <param name="originalValues">The original values to be sorted.</param>
         public SortingJob(IEnumerable<int> originalValues)
         {
             this.Id = Guid.NewGuid().ToString();
@@ -48,10 +52,11 @@ namespace Challenge.WebIntSorter
         /// <summary>
         /// Original values.
         /// </summary>
-        public IEnumerable<int> OriginalValues { get; set; }
+        public IEnumerable<int> OriginalValues { get; }
 
         /// <summary>
-        /// Sorts the sequence.
+        /// Sorts the sequence. This will cause <see cref="Values"/> to be
+        /// assigned the sorted sequence. <see cref="OriginalValues"/> will not change.
         /// </summary>
         public void Sort()
         {
