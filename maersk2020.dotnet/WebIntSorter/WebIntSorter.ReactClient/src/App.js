@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stack, Text, FontWeights, TextField, DefaultButton, Separator, PrimaryButton, Link, Callout, Spinner, SpinnerSize, mergeStyleSets } from 'office-ui-fabric-react';
+import { Stack, Text, FontWeights, TextField, ActivityItem, Icon, initializeIcons, DefaultButton, Separator, PrimaryButton, Link, Callout, Spinner, SpinnerSize, mergeStyleSets } from 'office-ui-fabric-react';
 import './App.css';
 import { array2str, createRandomSequence } from "./utils"
 
@@ -32,6 +32,14 @@ function App() {
       textAlign: "left"
     }
   };
+  const activityItemStyles = {
+    root: {
+      maxWidth: "250px",
+      textAlign: "left"
+    }
+  };
+
+  initializeIcons();
 
   return (
     <Stack
@@ -56,6 +64,16 @@ function App() {
         Enqueue jobs
       </Text>
       <Stack horizontal gap={15} horizontalAlign="center">
+        <Stack>
+          <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+            activityDescription={"Make sure the connection settings are ok (page header)."} />
+          <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+            activityDescription={"Type a list manually or use the buttons to generate a random one."} />
+          <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+            activityDescription={"Enqueue a sorting job."} />
+          <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"Info"} />}
+            activityDescription={"If successful, the job id will be copied in the section below ready for action."} />
+        </Stack>
         <Stack gap={15} verticalAlign="stretch">
           <DefaultButton text="Random sequence" onClick={onButtonRndClick} disabled={!inputEnabled}></DefaultButton>
           <DefaultButton text="Long random sequence" onClick={onButtonLongRndClick} disabled={!inputEnabled}></DefaultButton>
@@ -79,7 +97,19 @@ function App() {
         Inspect jobs
       </Text>
       <Stack horizontal gap={15} horizontalAlign="center">
-        <TextField styles={textFieldStyles} label="Job id" value={jobId}></TextField>
+      <Stack>
+        <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+          activityDescription={"Make sure the connection settings are ok (page header)."} />
+        <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+          activityDescription={"Type a job id in the box."} />
+        <ActivityItem styles={activityItemStyles} activityIcon={<Icon iconName={"CheckMark"} />}
+          activityDescription={"Request info for the specified job."} />
+      </Stack>
+        <Stack gap={15}>
+          <TextField styles={textFieldStyles} label="Job id" value={jobId}></TextField>
+          <PrimaryButton text="Get job info" disabled={false} onClick={onButtonInfoClick}></PrimaryButton>
+        </Stack>
+        <Separator vertical />
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
       </Stack>
       { calloutVisible &&
@@ -138,6 +168,10 @@ function App() {
       setInputEnabled(true);
       setSpinnerVisible(false);
     });
+  }
+
+  function onButtonInfoClick() {
+
   }
 
   function onButtonRndClick() {
