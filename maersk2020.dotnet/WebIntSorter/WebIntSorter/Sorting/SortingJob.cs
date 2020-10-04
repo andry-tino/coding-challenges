@@ -13,6 +13,7 @@ namespace Challenge.WebIntSorter
     public class SortingJob
     {
         private IEnumerable<int> values;
+        private IEnumerable<int> originalValues;
 
         /// <summary>
         /// The unique ID assigned to this job.
@@ -77,39 +78,97 @@ namespace Challenge.WebIntSorter
                     return;
                 }
 
-                this.RawValues = value.Select(n => n.ToString()).Aggregate((string a, string b) => $"{a},{b}");
+                this.RawValues = ArrayToString(value);
             }
         }
 
         /// <summary>
-        /// Makes sure that, in case <see cref="Values"/> was explicitely assigned,
-        /// <see cref="IntegerValues"/> gets the correct value.
+        /// The job original values to sort.
+        /// To have it mapped correctly in the entity, a primitive type is
+        /// used: string representation, comma separated.
         /// </summary>
-        /// <returns>The same object after the update to <see cref="IntegerValues"/>.</returns>
+        /// <remarks>
+        /// Do not use this when getting or setting the values in code,
+        /// use <see cref="OriginalValues"/> instead.
+        /// In order to properly emit the values as a JSON array, property
+        /// <see cref="OriginalValues"/> is serialized while this property will not
+        /// be to avoid chattiness in the API.
+        /// </remarks>
+        [JsonIgnore]
+        public string RawOriginalValues { get; set; }
+
+        /// <summary>
+        /// Utility property to allow interfacing with <see cref="RawOriginalValues"/> using the proper type.
+        /// </summary>
+        [NotMapped]
+        public IEnumerable<int> OriginalValues
+        {
+            get { return this.originalValues; }
+
+            set
+            {
+                this.originalValues = value;
+
+                if (value == null)
+                {
+                    this.RawOriginalValues = null;
+                    return;
+                }
+
+                if (value.Count() == 0)
+                {
+                    this.RawOriginalValues = string.Empty;
+                    return;
+                }
+
+                this.RawOriginalValues = ArrayToString(value);
+            }
+        }
+
+        /// <summary>
+        /// Makes sure that, in case either <see cref="RawValues"/> or
+        /// <see cref="RawOriginalValues"/> was explicitely assigned,
+        /// <see cref="Values"/> and <see cref="OriginalValues"/> get the correct values.
+        /// </summary>
+        /// <returns>
+        /// The same object after the update to <see cref="Values"/> and
+        /// <see cref="OriginalValues"/>.
+        /// </returns>
         /// <remarks>
         /// Use this method in models when implementing derivates of
         /// <see cref="Microsoft.EntityFrameworkCore.DbContext"/>.
         /// </remarks>
         public SortingJob SyncValues()
         {
-            if (this.RawValues == null)
+            SyncVariableFromRaw(this.RawValues, ref this.values);
+            SyncVariableFromRaw(this.RawOriginalValues, ref this.originalValues);
+
+            return this; // Allow chaining
+        }
+
+        private static void SyncVariableFromRaw(string rawValues, ref IEnumerable<int> values)
+        {
+            if (rawValues == null)
             {
-                this.values = null;
+                values = null;
             }
-            else if (this.RawValues.Length == 0)
+            else if (rawValues.Length == 0)
             {
-                this.values = new int[0];
+                values = new int[0];
             }
             else
             {
-                this.values = this.RawValues.Split(",").Select(s =>
+                values = rawValues.Split(",").Select(s =>
                 {
                     var success = int.TryParse(s, out int v);
                     return success ? v : 0;
                 });
             }
+        }
 
-            return this;
+        private static string ArrayToString(IEnumerable<int> array)
+        {
+            return array.Select(n => n.ToString()).Aggregate((string a, string b) => $"{a},{b}");
         }
     }
 }

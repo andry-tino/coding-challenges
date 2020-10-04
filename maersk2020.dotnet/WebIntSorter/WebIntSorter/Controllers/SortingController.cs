@@ -90,7 +90,8 @@ namespace Challenge.WebIntSorter.Controllers
                 var job = new SortingJob()
                 {
                     Duration = -1,
-                    Status = SortingJobStatus.Pending
+                    Status = SortingJobStatus.Pending,
+                    OriginalValues = input
                 };
 
                 try
