@@ -13,10 +13,11 @@ function App() {
   const [outText, setOutText] = useState("Type your sequence on the left box and then leave...");
   const [srcText, setSrcText] = useState("");
   const [jobId, setJobId] = useState("");
-  const [jobState, setOutJobState] = useState("");
+  const [jobState, setJobState] = useState("");
   const [port, setPort] = useState(5001);
   const [calloutVisible, setCalloutVisible] = useState(false);
-  const [spinnerVisible, setSpinnerVisible] = useState(false);
+  const [spinnerTopVisible, setSpinnerTopVisible] = useState(false);
+  const [spinnerBottomVisible, setSpinnerBottomVisible] = useState(false);
   const [inputTopAreaEnabled, setInputTopAreaEnabled] = useState(true);
   const [inputBottomAreaEnabled, setInputBottomAreaEnabled] = useState(true);
   const [enqueueButtonEnabled, setEnqueueButtonEnabled] = useState(false); // Sync with srcText
@@ -91,7 +92,7 @@ function App() {
               <PrimaryButton text="Enqueue job" disabled={!enqueueButtonEnabled || !inputTopAreaEnabled} onClick={onButtonEnqueueClick}></PrimaryButton>
             </Stack.Item>
             <Stack.Item grow={0}>
-              { spinnerVisible &&
+              { spinnerTopVisible &&
                 <Spinner size={SpinnerSize.medium} />
               }
             </Stack.Item>
@@ -116,7 +117,16 @@ function App() {
       </Stack>
         <Stack gap={15}>
           <TextField styles={textFieldStyles} label="Job id" onChange={onJobIdChange} value={jobId} disabled={!inputBottomAreaEnabled}></TextField>
-          <PrimaryButton text="Get job info" disabled={!infoButtonEnabled || !inputBottomAreaEnabled} onClick={onButtonInfoClick}></PrimaryButton>
+          <Stack horizontal horizontalAlign="space-between">
+            <Stack.Item grow={1}>
+              <PrimaryButton text="Get job info" disabled={!infoButtonEnabled || !inputBottomAreaEnabled} onClick={onButtonInfoClick}></PrimaryButton>
+            </Stack.Item>
+            <Stack.Item grow={0}>
+              { spinnerBottomVisible &&
+                <Spinner size={SpinnerSize.medium} />
+              }
+            </Stack.Item>
+          </Stack>
         </Stack>
         <Separator vertical />
         <TextField multiline readOnly disabled rows={7} value={jobState}></TextField>
@@ -165,7 +175,7 @@ function App() {
   function onButtonEnqueueClick() {
     setOutText("Processing...");
     setInputTopAreaEnabled(false);
-    setSpinnerVisible(true);
+    setSpinnerTopVisible(true);
 
     fetch(`${serverAddressHost}:${port}/api/sorting`, {
       method: "POST",
@@ -187,17 +197,46 @@ function App() {
       if (id !== undefined) {
         setOutText(`Job id: '${id}'`);
         setJobId(id);
+      } else {
+        setOutText("Could not retrieve data :(");
       }
     }).catch(err => {
       setOutText(`An error occurred. ${err}`);
     }).finally(() => {
       setInputTopAreaEnabled(true);
-      setSpinnerVisible(false);
+      setSpinnerTopVisible(false);
     });
   }
 
   function onButtonInfoClick() {
+    setJobState("Processing...");
+    setInputBottomAreaEnabled(false);
+    setSpinnerBottomVisible(true);
 
+    fetch(`${serverAddressHost}:${port}/api/sorting/${jobId}`, {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "*/*"
+      }
+    }).then(res => {
+      setJobState("Completed!");
+      return res.json();
+    }).then(data => {
+      const id = data["id"];
+      if (id !== undefined) {
+        const msg = `Id: ${id}, Status: ${data["status"]}, Values: '${data["values"]}'`;
+        setJobState(msg);
+      } else {
+        setJobState("Could not retrieve data :(");
+      }
+    }).catch(err => {
+      setJobState(`An error occurred. ${err}`);
+    }).finally(() => {
+      setInputBottomAreaEnabled(true);
+      setSpinnerBottomVisible(false);
+    });
   }
 
   function onButtonRndClick() {
