@@ -37,10 +37,16 @@ namespace Challenge.WebIntSorter
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add in memory database to store jobs
             services.AddDbContext<SortingJobContext>(options => options.UseInMemoryDatabase("JobsDb"));
+
+            // Add a custom DbContext to access the database of jobs
             services.AddScoped<SortingJobContext>();
+
+            // Add CORS capabilities
             services.AddCors(this.ConfigureCors);
 
+            // Add the controllers defined in this assembly
             services.AddControllers()
                 .AddJsonOptions(this.ConfigureJsonSerialization);
         }
