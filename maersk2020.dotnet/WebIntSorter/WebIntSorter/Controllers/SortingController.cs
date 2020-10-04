@@ -21,17 +21,17 @@ namespace Challenge.WebIntSorter.Controllers
     public class SortingController : ControllerBase
     {
         private readonly ILogger<SortingController> logger;
-        private readonly SortingJobContext dbContext;
+        private readonly SortingJobCollection jobsCollection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SortingController"/> class.
         /// </summary>
         /// <param name="logger">The logger passed as dependency.</param>
-        /// <param name="dbContext">The database context passed as dependency.</param>
-        public SortingController(ILogger<SortingController> logger, SortingJobContext dbContext)
+        /// <param name="jobsCollection">The collection used to store jobs across different calls.</param>
+        public SortingController(ILogger<SortingController> logger, SortingJobCollection jobsCollection)
         {
             this.logger = logger;
-            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            this.jobsCollection = jobsCollection;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Challenge.WebIntSorter.Controllers
         [HttpGet]
         public IEnumerable<SortingJob> GetAll()
         {
-            return this.dbContext.RetrieveJobs();
+            return this.jobsCollection.RetrieveJobs();
         }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace Challenge.WebIntSorter.Controllers
         /// <param name="id">The id of the job to look for.</param>
         /// <returns>The requested <see cref="SortingJob"/>.</returns>
         [HttpGet("{id}")]
-        public SortingJob Get(long id)
+        public SortingJob Get(string id)
         {
-            return this.dbContext.RetrieveJob(id);
+            return this.jobsCollection.RetrieveJob(id);
         }
 
         /// <summary>
@@ -66,81 +66,58 @@ namespace Challenge.WebIntSorter.Controllers
         /// be allowed to query the job status via the <see cref="Get"/> method.
         /// </remarks>
         [HttpPost]
-        public async Task<ActionResult> Post(SortingJob input)
+        public async Task<ActionResult> PostAsync(IEnumerable<int> sequence)
         {
             // Validate input
-            var sequence = input.Values;
             if (sequence == null)
             {
                 this.logger.LogError($"Numeric sequence provided is null, cannot enqueue job");
-                throw new ArgumentException("A numeric sequence is required", nameof(input));
+                throw new ArgumentException("A numeric sequence is required", nameof(sequence));
             }
 
             // Start background job
-            var jobId = await this.CreateAsync(sequence);
+            var job = this.Create(sequence);
+            Task.Run(() => this.EnqueueJob(job));
 
-            this.logger.LogInformation($"Enqueued sorting job '{jobId}' with {sequence.Count()} elements to sort");
+            this.logger.LogInformation($"Enqueued sorting job '{job.Id}' with {sequence.Count()} elements to sort");
 
             // Return response
-            return CreatedAtAction("post", new { id = jobId });
+            return CreatedAtAction("post", new { id = job.Id });
         }
 
-        private async Task<long> CreateAsync(IEnumerable<int> input)
+        private SortingJob Create(IEnumerable<int> input)
         {
-            return await Task<long>.Run(async () =>
+            var job = new SortingJob(input);
+
+            this.jobsCollection.AddJob(job);
+
+            return job;
+        }
+
+        private void EnqueueJob(SortingJob job)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
             {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                // Execute the sorting logic
+                job.Sort();
+                job.Status = SortingJobStatus.Completed;
+            }
+            catch (InvalidOperationException e)
+            {
+                this.logger.LogError($"Error while executing sorting job '{job.Id}': {e.Message}");
+                throw e;
+            }
+            finally
+            {
+                // Tracked time: until sorting is complete
+                stopwatch.Stop();
 
-                var job = new SortingJob()
-                {
-                    Duration = -1,
-                    Status = SortingJobStatus.Pending,
-                    OriginalValues = input
-                };
-
-                try
-                {
-                    this.dbContext.AddJob(job);
-                    // Save the job now, later it will be updated
-                    this.dbContext.SaveChanges();
-
-                    // Execute the sorting logic
-                    IEnumerable<int> sortedSequence = null;
-                    try
-                    {
-                        sortedSequence = await input.SortIntegers();
-                        job.Status = SortingJobStatus.Completed;
-                    }
-                    catch (Exception e)
-                    {
-                        this.logger.LogError($"Error while sorting when executing job '{job.Id}': {e.Message}. Operation continues");
-                        job.Status = SortingJobStatus.Error;
-                    }
-                    // Tracked time: until sorting is complete
-                    stopwatch.Stop();
-
-                    // Update the job
-                    job.Values = sortedSequence;
-                    job.Duration = stopwatch.ElapsedMilliseconds;
-                    this.dbContext.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    this.logger.LogError($"Error while executing job '{job.Id}': {e.Message}");
-                    throw e;
-                }
-                finally
-                {
-                    if (stopwatch.IsRunning)
-                    {
-                        stopwatch.Stop();
-                    }
-                }
-
-                // Return the id
-                return job.Id;
-            });
+                // Update the job
+                job.Duration = stopwatch.ElapsedMilliseconds;
+            }
         }
     }
 }

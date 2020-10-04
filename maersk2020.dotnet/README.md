@@ -43,16 +43,14 @@ WIS is a server exposing a web API to sort integer sequences.
 - `Content-Type`: `application/json`.
 
 ### Enqueueing a sorting job
-To enqueue a sorting job, submit a `POST` request to `/api/sorting` by specifying the sequence to sort onside an object `{ values: number[] }`:
+To enqueue a sorting job, submit a `POST` request to `/api/sorting` by specifying the sequence to sort onside an array of integers:
 
 ```
 POST /api/sorting HTTP/1.1
 Host: localhost:5001
 Content-Type: application/json
 
-{
-    "values":[1,5,3,7,3,45,4,67,53,0]
-}
+[1,5,3,7,3,45,4,67,53,0]
 ```
 
 The response will be sent immediately:
@@ -79,7 +77,7 @@ The response:
 ```
 [
 	{
-		"id": 1,
+		"id": 6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af,
 		"timestamp": "2020-10-04T17:07:39.1873311+02:00",
 		"duration": 150,
         "status": 1,
@@ -94,7 +92,7 @@ It will include an array of object, each representing a job:
 
 ```
 {
-	"id": number,
+	"id": string,
 	"timestamp": string,
 	"duration": number,
 	"status": number,
@@ -120,7 +118,7 @@ To retrieve one specific job, submit a `GET` request to `/api/sorting/{job-id}`,
 `{job-id}` is the ID of the job enqueued previously:
 
 ```
-GET /api/sorting/1 HTTP/1.1
+GET /api/sorting/6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af HTTP/1.1
 Host: localhost:5001
 Content-Type: application/json
 ```
@@ -129,7 +127,7 @@ The response:
 
 ```
 {
-	"id": 1,
+	"id": 6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af,
 	"timestamp": "2020-10-04T17:07:39.1873311+02:00",
 	"duration": 150,
 	"status": 1,
@@ -140,4 +138,4 @@ The response:
 
 It will include only one object representing the requested job.
 
-If the requested job (the job ID) does not exist, the response body will be empty.
+If the requested job (the job ID) does not exist, the response body will be empty and the response status will be `204 No Content`.

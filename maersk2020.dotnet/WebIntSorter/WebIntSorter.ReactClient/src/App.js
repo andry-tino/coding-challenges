@@ -203,9 +203,7 @@ function App() {
         "Accept": "*/*"
       },
       body: JSON.stringify(
-        {
-          values: srcText.split(",").map(x=>+x)
-        }
+        srcText.split(",").map(x=>+x)
       )
     }).then(res => {
       setOutText("Completed!");
