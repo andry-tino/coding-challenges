@@ -13,15 +13,21 @@ To interact with the web API, you will need either:
 - An HTTP client (fx. [Postman](https://www.postman.com/), [Fiddler](https://www.telerik.com/download/fiddler), etc.).
 - The [WebIntSorter ReactClient](WebIntSorter/WebIntSorter.ReactClient/README.md).
 
+## Get
+To get the application, you can either:
+
+- [Clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git).
+- Use the binaries already available as [releases](https://github.com/andry-tino/coding-challenges/releases). It is recommended to pick up the latest version among those available.
+
 ## Building the server in Visual Studio
-To build the server:
+If you already got the binaries, you can skip this. To build the server:
 
 1. Open the solution `WebIntSorter.sln` in Visual Studio.
 2. Select configuration `Release`.
 3. Build the solution by selecting: `Build`, `Build Solution` in Visual Studio.
 
 ## Building the server using `dotnet`
-To build the server:
+If you already got the binaries, you can skip this. To build the server:
 
 1. Open a new shell window.
 2. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
@@ -30,15 +36,16 @@ To build the server:
 ## Running the server
 To run the server you can either:
 
-- Use Visual Studio to build the solution and then run the application.
-- Use the binaries already available as [releases](https://github.com/andry-tino/coding-challenges/releases). It is recommended to pick up the latest version among those available.
+- Use Visual Studio to run the application (after building it, see previous steps).
+- Use the binaries already available.
 
-By default, the server will run on port `5000` for HTTP and port `5001` for HTTPS (recommended).
+By default, the server will run on port `5000` for HTTP (only in `Development` environment) and port `5001` for HTTPS (recommended).
 
 ### Running in Visual Studio
 If you choose to build on your own the solution, after doing so, do the following:
 
 1. Select the `WebIntSorterProd` configuration.
+    - Use the `WebIntSorter` configuration to get the `Development` environment and be able to use HTTP.
 2. Select the `Run` button.
 
 ### Running using `dotnet`
@@ -46,20 +53,23 @@ If you want to use the commandline:
 
 1. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
 2. Run command: `dotnet run --configuration Release --launch-profile WebIntSorterProd`.
+    - Use option `--launch-profile WebIntSorter` to get the `Development` environment and be able to use HTTP.
 
 ## Using WebIntSorter
 WIS is a server exposing a web API to sort integer sequences.
 
 - Two routes are available: `/api`, `/api/sorting`.
+- Allowed verbs  (HTTP methods) for `/api` are:
+	- `GET`: Get info on the API.
 - Allowed verbs  (HTTP methods) for `/api/sorting` are:
     - `POST`: Enqueue a sorting job.
 	- `GET`: Get info about all the enqueued jobs or one specific job.
 - `Content-Type`: `application/json`.
 
-Submit a `GET` request against `/api` to get a list of all supported routes in the API.
+Submit a `GET` request against `/api` to get a list of all supported routes in the API. Use `/api/sorting` to access sorting functionalities.
 
 ### Enqueueing a sorting job
-To enqueue a sorting job, submit a `POST` request to `/api/sorting` by specifying the sequence to sort onside an array of integers:
+To enqueue a sorting job, submit a `POST` request to `/api/sorting` by specifying the sequence to sort inside an array of integers:
 
 ```
 POST /api/sorting HTTP/1.1
@@ -73,7 +83,7 @@ The response will be sent immediately:
 
 ```
 {
-    "id": 3
+    "id": "6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af"
 }
 ```
 
@@ -93,7 +103,7 @@ The response:
 ```
 [
 	{
-		"id": 6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af,
+		"id": "6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af",
 		"timestamp": "2020-10-04T17:07:39.1873311+02:00",
 		"duration": 150,
 		"status": 1,
@@ -143,7 +153,7 @@ The response:
 
 ```
 {
-	"id": 6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af,
+	"id": "6e0b0385-2bbe-447b-a7e3-aa2bd5cec1af",
 	"timestamp": "2020-10-04T17:07:39.1873311+02:00",
 	"duration": 150,
 	"status": 1,
