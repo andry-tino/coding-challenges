@@ -19,15 +19,22 @@ To get the application, you can either:
 - [Clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git).
 - Use the binaries already available as [releases](https://github.com/andry-tino/coding-challenges/releases). It is recommended to pick up the latest version among those available.
 
-## Building the server in Visual Studio
-If you already got the binaries, you can skip this. To build the server:
+## Build
+If you already got the binaries, you can skip this.
+You can either:
+
+- Build the server using Visual Studio.
+- Build the server using the commandline.
+
+### Building the server in Visual Studio
+To build the server using Visual Studio:
 
 1. Open the solution `WebIntSorter.sln` in Visual Studio.
 2. Select configuration `Release`.
 3. Build the solution by selecting: `Build`, `Build Solution` in Visual Studio.
 
-## Building the server using `dotnet`
-If you already got the binaries, you can skip this. To build the server:
+### Building the server using `dotnet`
+To build the server using the commandline:
 
 1. Open a new shell window.
 2. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
@@ -42,7 +49,7 @@ To run the server you can either:
 By default, the server will run on port `5000` for HTTP (only in `Development` environment) and port `5001` for HTTPS (recommended).
 
 ### Running in Visual Studio
-If you chose to build on your own the solution, after doing so, do the following:
+If you chose to build the solution, after doing so, do the following:
 
 1. Select the `WebIntSorterProd` configuration.
     - Use the `WebIntSorter` configuration to get the `Development` environment and be able to use HTTP.
@@ -54,12 +61,15 @@ If you want to use the commandline and you built the code using `dotnet`:
 1. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
 2. Run command: `dotnet run --configuration Release --launch-profile WebIntSorterProd`.
     - Use option `--launch-profile WebIntSorter` to get the `Development` environment and be able to use HTTP.
-	
+
+### Running the binaries
 If you got the binaries, no build was required. Do the following:
 
 1. In the folder you got, open a new shell.
 2. Set environment variable `ASPNETCORE_ENVIRONMENT` to `"Production"`.
 3. Run: `dotnet .\Maersk2020DotNet.WebIntSorter.dll`.
+
+---
 
 ## Using WebIntSorter
 WIS is a server exposing a web API to sort integer sequences.
