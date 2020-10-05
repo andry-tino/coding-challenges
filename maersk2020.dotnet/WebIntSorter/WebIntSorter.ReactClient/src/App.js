@@ -7,7 +7,7 @@ import { array2str, createRandomSequence } from "./utils"
 const serverAddressHost = `https://localhost`;
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const normalRandomArraySize = 100;
-const longRandomArraySize = 1000;
+const longRandomArraySize = 10000;
 
 function App() {
   const [outText, setOutText] = useState("Type your sequence on the left box and then leave...");
@@ -182,7 +182,7 @@ function App() {
   }
 
   function updateInfoButtonEnabled(jobIdValue) {
-    setInfoButtonEnabled(jobIdValue !== undefined && parseInt(jobIdValue) > 0);
+    setInfoButtonEnabled(jobIdValue !== undefined && jobIdValue.length > 0);
   }
 
   function onPortTextBoxChange(e) {

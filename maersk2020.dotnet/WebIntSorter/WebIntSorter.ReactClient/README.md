@@ -8,14 +8,17 @@ To be able to run this web application, you need the following:
 - Node ^10.15.0.
 - A browser (latest version) among: Chrome, Edge, Firefox.
 
+## Get
+To get the client, you either [clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git), or get the latest _Maersk 2020 WebIntSorter ReactClient_ release from [releases](https://github.com/andry-tino/coding-challenges/releases).
+
 ## Run
-In the project directory, run:
+After getting the code, in the project directory, run:
 
 ```
 npm install
 ```
 
-This will install all required node modules. Then run:
+This will install all required Node modules. Then run:
 
 ```
 npm run build
@@ -33,9 +36,15 @@ Once installed, run:
 serve -s build -l 3000
 ```
 
-Open up yor favorite browser, and navigate to: `http://localhost:3000`.
+Open up your favorite browser, and navigate to: `http://localhost:3000`.
 
 ![The React client](client.png "Overview of the React client")
 
 The client is ready to be used.
 
+### Important
+The WebIntSorter server is configured to support CORS only for the following requesting hosts:
+
+- `http://localhost:3000`
+
+You should serve the client from your `localhost` port `3000`, otherwise it will properly work.
