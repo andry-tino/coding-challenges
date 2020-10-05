@@ -38,14 +38,14 @@ By default, the server will run on port `5000` for HTTP and port `5001` for HTTP
 ### Running in Visual Studio
 If you choose to build on your own the solution, after doing so, do the following:
 
-1. Select the `WebIntSorter` configuration.
+1. Select the `WebIntSorterProd` configuration.
 2. Select the `Run` button.
 
 ### Running using `dotnet`
 If you want to use the commandline:
 
 1. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
-2. Run command: `dotnet .\bin\Release\netcoreapp3.1\Maersk2020DotNet.WebIntSorter.dll`.
+2. Run command: `dotnet run --configuration Release --launch-profile WebIntSorterProd`.
 
 ## Using WebIntSorter
 WIS is a server exposing a web API to sort integer sequences.
