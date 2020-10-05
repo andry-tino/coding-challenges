@@ -124,7 +124,7 @@ It will include an array of object, each representing a job:
     - `0`: Pending, the job is still running.
 	- `1`: Completed successfully.
 	- `2`: Failed.
-- `values`: The sorted sequence if the status is `1`, `null` otherwise.
+- `values`: The sorted sequence if the status is `1`. The value will be `null` is status is `0`. The value should not be relied upon if status is `2`.
 - `originalValues`: The original sequence provided when the job was enqueued.
 
 If no jobs have been enqueued, the response body will be an empty aray `[]`.

@@ -108,6 +108,8 @@ namespace Challenge.WebIntSorter.Controllers
             catch (InvalidOperationException e)
             {
                 this.logger.LogError($"Error while executing sorting job '{job.Id}': {e.Message}");
+                job.Status = SortingJobStatus.Error;
+
                 throw e;
             }
             finally
