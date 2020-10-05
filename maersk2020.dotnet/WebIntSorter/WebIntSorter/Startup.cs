@@ -58,13 +58,15 @@ namespace Challenge.WebIntSorter
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                app.UseHttpsRedirection();
             }
             else
             {
                 app.UseExceptionHandler("/error");
-            }
 
-            app.UseHttpsRedirection();
+                app.UseHsts();
+            }
 
             app.UseRouting();
 
