@@ -94,6 +94,11 @@ namespace Challenge.WebIntSorter.Controllers
 
             this.logger.LogInformation($"Enqueued sorting job '{job.Id}' with {sequence.Count()} elements to sort");
 
+            // Make sure we hint the client that the response should not be cached
+            // Though this is not really necessary because as per HTTP 1.1, POST
+            // should not be cached, we do this just to be 100% sure
+            Response.Headers.Add(HeaderNames.CacheControl, "no-cache");
+
             // Return response
             return CreatedAtAction("post", new { id = job.Id });
         }
