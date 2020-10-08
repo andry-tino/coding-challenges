@@ -55,7 +55,8 @@ namespace challenge {
 			/// </summary>
 			/// <param name="anagram_phrase">The anagram phrase to handle.</param>
 			/// <param name="dbfile_path">The path to the words file.</param>
-			Solver(const std::string& anagram_phrase, const std::string& dbfile_path);
+			/// <param name="log_stream">Log stream.</param>
+			Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream* log_stream = 0);
 
 			/// <summary>
 			/// Copy initializes a new instance of this class.
@@ -71,6 +72,7 @@ namespace challenge {
 		private:
 			std::string anagram_phrase;
 			std::string dbfile_path;
+			std::ostream* log_stream;
 			wordset* words;
 			usewordset* use_words;
 
@@ -81,6 +83,7 @@ namespace challenge {
 			virtual const result_t& solve();
 
 		private:
+			void log(const std::string& what) const;
 			bool check_dbfile_path() const;
 			void load_words();
 			void process_words();

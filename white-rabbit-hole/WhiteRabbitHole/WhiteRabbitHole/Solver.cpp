@@ -6,10 +6,11 @@ using namespace challenge::whiterabbithole;
 
 // Ctors
 
-Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path)
+Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream* log_stream)
 {
 	this->anagram_phrase = anagram_phrase;
 	this->dbfile_path = dbfile_path;
+	this->log_stream = log_stream;
 	this->words = 0;
 	this->use_words = 0;
 }
@@ -76,6 +77,15 @@ const Solver::result_t& Solver::solve()
 }
 
 // Private methods
+
+void Solver::log(const std::string& what) const {
+	if (!this->log_stream)
+	{
+		return;
+	}
+
+	*(this->log_stream) << what;
+}
 
 bool Solver::check_dbfile_path() const
 {
