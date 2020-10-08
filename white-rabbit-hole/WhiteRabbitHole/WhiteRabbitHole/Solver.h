@@ -7,10 +7,37 @@
 #include <fstream>
 #include <string>
 #include <exception>
-#include <unordered_set>
+#include <vector>
+#include <algorithm>
 
 namespace challenge {
 	namespace whiterabbithole {
+
+		typedef std::vector<std::string> phrase_t;
+
+		/// <summary>
+		/// Represents a utility object for algorithmic purposes.
+		/// </summary>
+		struct DispositionsTreeWalkState {
+		public:
+			typedef std::vector<unsigned int> disposition_t;
+		public:
+			DispositionsTreeWalkState() : disposition(0) {}
+			DispositionsTreeWalkState(const DispositionsTreeWalkState& other)
+			{
+				this->disposition = other.disposition;
+			}
+			~DispositionsTreeWalkState()
+			{
+				if (this->disposition) delete this->disposition;
+			}
+		private:
+			disposition_t* disposition;
+		public:
+			const disposition_t* get_disposition() const { return this->disposition; }
+			void push_to_disposition(unsigned int index) const { this->disposition->push_back(index); }
+			void pop_from_disposition() const { this->disposition->pop_back(); }
+		};
 
 		/// <summary>
 		/// Describes a solver.
@@ -18,7 +45,9 @@ namespace challenge {
 		class Solver
 		{
 		private:
-			typedef std::unordered_set<std::string> wordset;
+			typedef std::vector<std::string> wordset;
+			typedef std::vector<std::string> usewordset;
+			typedef std::vector<std::vector<std::string>> result_t;
 
 		public:
 			/// <summary>
@@ -43,13 +72,13 @@ namespace challenge {
 			std::string anagram_phrase;
 			std::string dbfile_path;
 			wordset* words;
-			wordset* use_words;
+			usewordset* use_words;
 
 		public:
 			/// <summary>
 			/// Executes the solving process.
 			/// </summary>
-			virtual void solve();
+			virtual const result_t& solve();
 
 		private:
 			bool check_dbfile_path() const;
@@ -58,6 +87,17 @@ namespace challenge {
 			bool accept_word(const std::string& word) const;
 			unsigned int get_phrase_words_count() const;
 			unsigned int get_phrase_char_count() const;
+			void dispositions_use_words(
+				unsigned int group_size,
+				const DispositionsTreeWalkState* state,
+				result_t* result) const;
+			const DispositionsTreeWalkState::disposition_t& get_residual_indices(
+				const DispositionsTreeWalkState::disposition_t& disposition,
+				unsigned int group_size) const;
+			void run_disposition(
+				unsigned int group_size,
+				const DispositionsTreeWalkState* state,
+				result_t* result) const;
 		}; // class Solver
 
 	} // namespace whiterabbithole
