@@ -8,6 +8,7 @@
 #include <string>
 #include <exception>
 #include <vector>
+#include <map>
 #include <algorithm>
 
 namespace challenge {
@@ -21,22 +22,24 @@ namespace challenge {
 		struct DispositionsTreeWalkState {
 		public:
 			typedef std::vector<unsigned int> disposition_t;
+			typedef std::map<std::string, bool> dispositions_cache_t;
 		public:
-			DispositionsTreeWalkState() { this->disposition = new std::vector<unsigned int>(); }
-			DispositionsTreeWalkState(const DispositionsTreeWalkState& other)
-			{
-				this->disposition = other.disposition;
-			}
-			~DispositionsTreeWalkState()
-			{
-				if (this->disposition) delete this->disposition;
-			}
+			DispositionsTreeWalkState(bool use_cache = true);
+			DispositionsTreeWalkState(const DispositionsTreeWalkState& other);
+			~DispositionsTreeWalkState();
 		private:
+			bool use_cache;
 			disposition_t* disposition;
+			dispositions_cache_t* dispositions_cache;
 		public:
-			const disposition_t* get_disposition() const { return this->disposition; } // TODO: return const reference
-			void push_to_disposition(unsigned int index) const { this->disposition->push_back(index); }
-			void pop_from_disposition() const { this->disposition->pop_back(); }
+			const disposition_t* get_disposition() const;
+			void push_to_disposition(unsigned int index) const;
+			void pop_from_disposition() const;
+			bool is_disposition_in_cache(const disposition_t& disposition) const;
+			static std::string get_disposition_words_str(const disposition_t& disposition,
+				const std::vector<std::string>& words);
+		private:
+			std::string get_disposition_str() const;
 		};
 
 		/// <summary>
@@ -98,7 +101,7 @@ namespace challenge {
 			bool accept_word(const std::string& word) const;
 			unsigned int get_phrase_words_count() const;
 			unsigned int get_phrase_char_count() const;
-			void dispositions_use_words(
+			void walk_dispositions(
 				unsigned int group_size,
 				const DispositionsTreeWalkState* state,
 				result_t* result) const;

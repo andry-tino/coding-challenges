@@ -5,6 +5,8 @@
 
 using namespace challenge::whiterabbithole;
 
+// --- Solver --- //
+
 // Ctors
 
 Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream& log_stream)
@@ -63,7 +65,7 @@ const Solver::result_t& Solver::solve()
 	DispositionsTreeWalkState* state = new DispositionsTreeWalkState();
 	result_t result;
 	this->log("Executing...");
-	this->dispositions_use_words(words_count, state, &result);
+	this->walk_dispositions(words_count, state, &result);
 	this->log("Job done!");
 	delete state;
 
@@ -240,7 +242,7 @@ unsigned int Solver::get_phrase_char_count() const
 	return this->anagram_phrase.length();
 }
 
-void Solver::dispositions_use_words(
+void Solver::walk_dispositions(
 	unsigned int group_size,
 	const DispositionsTreeWalkState* state,
 	result_t* result) const
@@ -249,11 +251,15 @@ void Solver::dispositions_use_words(
 	{
 		// Process this disposition as this is a complete disposition
 		DispositionRunResult run_result = this->run_disposition(group_size, state, result);
-		// this->log("Disposition: " + disposition_to_string(*(state->get_disposition()))); // Verbose
+		this->log("Disposition: " +
+			DispositionsTreeWalkState::get_disposition_words_str(*(state->get_disposition()),
+				*(this->use_words)) + " - " + disposition_to_string(*(state->get_disposition()))); // Verbose
+
 		if (run_result != DispositionRunResult::No)
 		{
 			this->log("Disposition: " + disposition_to_string(*(state->get_disposition())));
 		}
+
 		if (run_result == DispositionRunResult::Candidate)
 		{
 			this->log("|- Candidate");
@@ -280,7 +286,7 @@ void Solver::dispositions_use_words(
 		state->push_to_disposition(*it);
 
 		// Recursively process the new disposition
-		this->dispositions_use_words(group_size, state, result);
+		this->walk_dispositions(group_size, state, result);
 
 		// Remove the residual as not needed anymore
 		state->pop_from_disposition();
@@ -292,6 +298,7 @@ Solver::DispositionRunResult Solver::run_disposition(
 	const DispositionsTreeWalkState* state,
 	result_t* result) const
 {
+	bool a = (*(state->get_disposition())).at(0) == 10 && (*(state->get_disposition())).at(1) == 32; //TBR
 	// Build the try-phrase
 	phrase_t try_phrase;
 	unsigned int interspace_count = group_size - 1;
@@ -302,7 +309,7 @@ Solver::DispositionRunResult Solver::run_disposition(
 		it++)
 	{
 		unsigned int index = *it;
-		std::string word = (*(this->use_words))[1];
+		std::string word = (*(this->use_words)).at(index);
 		try_phrase.push_back(word);
 		try_phrase_len += word.length();
 	}
@@ -345,4 +352,84 @@ DispositionsTreeWalkState::disposition_t Solver::get_residual_indices(
 	}
 
 	return ret_disposition;
+}
+
+// --- DispositionsTreeWalkState --- //
+
+// Ctors
+
+DispositionsTreeWalkState::DispositionsTreeWalkState(bool use_cache)
+{
+	this->use_cache = use_cache;
+	this->disposition = new disposition_t();
+	this->dispositions_cache = new dispositions_cache_t();
+}
+
+DispositionsTreeWalkState::DispositionsTreeWalkState(const DispositionsTreeWalkState& other)
+{
+	this->disposition = new disposition_t();
+	*(this->disposition) = *(other.disposition);
+
+	this->dispositions_cache = new dispositions_cache_t();
+	*(this->dispositions_cache) = *(other.dispositions_cache);
+}
+
+DispositionsTreeWalkState::~DispositionsTreeWalkState()
+{
+	if (this->disposition) delete this->disposition;
+	if (this->dispositions_cache) delete this->dispositions_cache;
+}
+
+// Public methods
+
+const DispositionsTreeWalkState::disposition_t* DispositionsTreeWalkState::get_disposition() const
+{ 
+	return this->disposition; // TODO: return const reference
+}
+
+std::string DispositionsTreeWalkState::get_disposition_str() const
+{
+	return disposition_to_string(*(this->get_disposition()));
+}
+
+void DispositionsTreeWalkState::push_to_disposition(unsigned int index) const
+{
+	this->disposition->push_back(index);
+
+	if (this->use_cache)
+	{
+		// Add to the dictionary to keep track
+		std::pair<std::string, bool> cache_val =
+			std::pair<std::string, bool>(this->get_disposition_str(), true);
+		std::pair<std::map<std::string, bool>::iterator, bool> insert_res =
+			this->dispositions_cache->insert(cache_val);
+		if (!insert_res.second)
+		{
+			throw std::exception("Inconsistency in cache insertion");
+		}
+	}
+}
+
+std::string DispositionsTreeWalkState::get_disposition_words_str(const disposition_t& disposition,
+	const std::vector<std::string>& words)
+{
+	std::vector<std::string> disposition_words;
+	for (disposition_t::const_iterator it = disposition.begin(); it != disposition.end(); it++)
+	{
+		disposition_words.push_back(words.at(*it));
+	}
+
+	return phrase_to_string(disposition_words);
+}
+
+void DispositionsTreeWalkState::pop_from_disposition() const
+{
+	this->disposition->pop_back();
+}
+
+// Private methods
+
+bool DispositionsTreeWalkState::is_disposition_in_cache(const disposition_t& disposition) const
+{
+	return this->dispositions_cache->find(disposition_to_string(disposition)) != this->dispositions_cache->end();
 }
