@@ -95,7 +95,7 @@ namespace challenge {
 			void load_words();
 			void process_words();
 			std::vector<std::string> get_words_in_phrase(const std::string& phrase) const;
-			bool accept_word(const std::string& word, const std::vector<size_t> words_len) const;
+			bool accept_word(const std::string& word) const;
 			unsigned int get_phrase_words_count() const;
 			unsigned int get_phrase_char_count() const;
 			void dispositions_use_words(

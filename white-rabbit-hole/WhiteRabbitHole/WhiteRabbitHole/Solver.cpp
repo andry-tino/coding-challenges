@@ -88,14 +88,21 @@ void Solver::load_all_res()
 		this->log("Usewords loaded: " + std::to_string(this->use_words->size()));
 	}
 
-	unsigned int disposition_count = this->get_disposition_count(this->get_phrase_words_count());
-	this->log("Number of dipositions to try: " + std::to_string(disposition_count));
+	if (this->use_words->size() <= 350)
+	{
+		unsigned int disposition_count = this->get_disposition_count(this->get_phrase_words_count());
+		this->log("Number of dipositions to try: " + std::to_string(disposition_count));
+	}
 
 	// Verbose
-	this->log("Use words are:");
-	for (usewordset::const_iterator it = this->use_words->begin(); it != this->use_words->end(); it++)
 	{
-		this->log("- " + (*it));
+		this->log("Use words are (first 100):");
+		unsigned int i = 100;
+		for (usewordset::const_iterator it = this->use_words->begin(); it != this->use_words->end(); it++)
+		{
+			if (i-- == 0) break;
+			this->log("- " + (*it));
+		}
 	}
 }
 
@@ -175,14 +182,6 @@ void Solver::process_words()
 		delete this->use_words;
 	}
 
-	std::vector<std::string> words_in_anagram_phrase =
-		this->get_words_in_phrase(this->anagram_phrase);
-	std::vector<size_t> words_len;
-	for (std::vector<std::string>::const_iterator it = words_in_anagram_phrase.begin(); it != words_in_anagram_phrase.end(); it++)
-	{
-		words_len.push_back(it->length());
-	}
-
 	this->use_words = new usewordset();
 
 	// For each word, include it in use_words only if:
@@ -191,7 +190,7 @@ void Solver::process_words()
 	// 2. All its characters are all contained in the anagram phrase
 	for (wordset::const_iterator it = this->words->begin(); it != this->words->end(); it++)
 	{
-		if (this->accept_word(*it, words_len))
+		if (this->accept_word(*it))
 		{
 			this->use_words->push_back(*it);
 		}
@@ -214,16 +213,10 @@ std::vector<std::string> Solver::get_words_in_phrase(const std::string& phrase) 
 	return result;
 }
 
-bool Solver::accept_word(const std::string& word, const std::vector<size_t> words_len) const
+bool Solver::accept_word(const std::string& word) const
 {
 	for (std::string::const_iterator it = word.begin(); it != word.end(); it++)
 	{
-		if (std::find(words_len.begin(), words_len.end(), word.length()) == words_len.end())
-		{
-			// The length is not compatible with any of the words in the phrase
-			return false;
-		}
-
 		if (this->anagram_phrase.find(*it) == std::string::npos)
 		{
 			// Found a character in word that is not present in anagram_phrase
