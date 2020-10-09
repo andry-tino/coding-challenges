@@ -48,6 +48,7 @@ namespace challenge {
 			typedef std::vector<std::string> wordset;
 			typedef std::vector<std::string> usewordset;
 			typedef std::vector<std::vector<std::string>> result_t;
+			enum DispositionRunResult { No, Candidate, Valid };
 
 		public:
 			/// <summary>
@@ -82,12 +83,19 @@ namespace challenge {
 			/// </summary>
 			virtual const result_t& solve();
 
+			/// <summary>
+			/// Loads all on demand resources.
+			/// </summary>
+			void load_all_res();
+
 		private:
 			void log(const std::string& what) const;
+			unsigned int get_disposition_count(unsigned int group_size) const;
 			bool check_dbfile_path() const;
 			void load_words();
 			void process_words();
-			bool accept_word(const std::string& word) const;
+			std::vector<std::string> get_words_in_phrase(const std::string& phrase) const;
+			bool accept_word(const std::string& word, const std::vector<size_t> words_len) const;
 			unsigned int get_phrase_words_count() const;
 			unsigned int get_phrase_char_count() const;
 			void dispositions_use_words(
@@ -95,9 +103,8 @@ namespace challenge {
 				const DispositionsTreeWalkState* state,
 				result_t* result) const;
 			DispositionsTreeWalkState::disposition_t get_residual_indices(
-				const DispositionsTreeWalkState::disposition_t& disposition,
-				unsigned int group_size) const;
-			void run_disposition(
+				const DispositionsTreeWalkState::disposition_t& disposition) const;
+			DispositionRunResult run_disposition(
 				unsigned int group_size,
 				const DispositionsTreeWalkState* state,
 				result_t* result) const;

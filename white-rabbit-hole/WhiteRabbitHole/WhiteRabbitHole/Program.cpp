@@ -27,10 +27,13 @@ int main()
 	std::getline(std::cin, dbfile_path);
 	std::cout << "Word dbfile location acquired: '" << dbfile_path << "'" << std::endl;
 
-	std::cout << "Starting algorithm..." << std::endl;
-
 	// Allocating solver and running it
 	Solver solver(anagram_phrase, dbfile_path, std::cout);
+	solver.load_all_res(); // Will log meaningful values out
+
+	std::getline(std::cin, std::string()); // Pause before starting
+
+	std::cout << "Starting algorithm..." << std::endl;
 	solver.solve();
 
 	// All good
