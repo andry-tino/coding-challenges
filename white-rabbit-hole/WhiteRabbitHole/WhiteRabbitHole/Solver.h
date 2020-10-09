@@ -22,7 +22,7 @@ namespace challenge {
 		public:
 			typedef std::vector<unsigned int> disposition_t;
 		public:
-			DispositionsTreeWalkState() : disposition(0) {}
+			DispositionsTreeWalkState() { this->disposition = new std::vector<unsigned int>(); }
 			DispositionsTreeWalkState(const DispositionsTreeWalkState& other)
 			{
 				this->disposition = other.disposition;
@@ -34,7 +34,7 @@ namespace challenge {
 		private:
 			disposition_t* disposition;
 		public:
-			const disposition_t* get_disposition() const { return this->disposition; }
+			const disposition_t* get_disposition() const { return this->disposition; } // TODO: return const reference
 			void push_to_disposition(unsigned int index) const { this->disposition->push_back(index); }
 			void pop_from_disposition() const { this->disposition->pop_back(); }
 		};
@@ -56,7 +56,7 @@ namespace challenge {
 			/// <param name="anagram_phrase">The anagram phrase to handle.</param>
 			/// <param name="dbfile_path">The path to the words file.</param>
 			/// <param name="log_stream">Log stream.</param>
-			Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream* log_stream = 0);
+			Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream& log_stream);
 
 			/// <summary>
 			/// Copy initializes a new instance of this class.
@@ -94,7 +94,7 @@ namespace challenge {
 				unsigned int group_size,
 				const DispositionsTreeWalkState* state,
 				result_t* result) const;
-			const DispositionsTreeWalkState::disposition_t& get_residual_indices(
+			DispositionsTreeWalkState::disposition_t get_residual_indices(
 				const DispositionsTreeWalkState::disposition_t& disposition,
 				unsigned int group_size) const;
 			void run_disposition(

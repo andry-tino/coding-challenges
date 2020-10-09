@@ -30,7 +30,7 @@ int main()
 	std::cout << "Starting algorithm..." << std::endl;
 
 	// Allocating solver and running it
-	Solver solver(anagram_phrase, dbfile_path);
+	Solver solver(anagram_phrase, dbfile_path, std::cout);
 	solver.solve();
 
 	// All good

@@ -1,16 +1,17 @@
 // Solver.cpp
 
 #include "Solver.h"
+#include "Utils.h"
 
 using namespace challenge::whiterabbithole;
 
 // Ctors
 
-Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream* log_stream)
+Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream& log_stream)
 {
 	this->anagram_phrase = anagram_phrase;
 	this->dbfile_path = dbfile_path;
-	this->log_stream = log_stream;
+	this->log_stream = &log_stream;
 	this->words = 0;
 	this->use_words = 0;
 }
@@ -56,11 +57,15 @@ const Solver::result_t& Solver::solve()
 		if (!this->words)
 		{
 			// Load the db file on demand only once
+			this->log("Loading words...");
 			this->load_words();
+			this->log("Words loaded: " + std::to_string(this->words->size()));
 		}
 
 		// Extract the usewords from words
+		this->log("Processing words...");
 		this->process_words();
+		this->log("Usewords loaded: " + std::to_string(this->use_words->size()));
 	}
 
 	unsigned int words_count = this->get_phrase_words_count();
@@ -70,7 +75,9 @@ const Solver::result_t& Solver::solve()
 	// and if positive, proceed with hash check
 	DispositionsTreeWalkState* state = new DispositionsTreeWalkState();
 	result_t result;
+	this->log("Executing...");
 	this->dispositions_use_words(words_count, state, &result);
+	this->log("Job done!");
 	delete state;
 
 	return result;
@@ -84,7 +91,7 @@ void Solver::log(const std::string& what) const {
 		return;
 	}
 
-	*(this->log_stream) << what;
+	*(this->log_stream) << what << std::endl;
 }
 
 bool Solver::check_dbfile_path() const
@@ -187,15 +194,19 @@ void Solver::dispositions_use_words(
 {
 	if (state->get_disposition()->size() == group_size)
 	{
-		// Process this disposition
+		this->log("Disposition: " + disposition_to_string(*(state->get_disposition())));
+
+		// Process this disposition as this is a complete disposition
 		this->run_disposition(group_size, state, result);
 
 		return;
 	}
 
 	// A valid disposition has to be created as state contains an incomplete one
+	this->log("Incomplete disposition: " + disposition_to_string(*(state->get_disposition())));
+
 	// Get residual array: all the indices not contained in state->disposition
-	const DispositionsTreeWalkState::disposition_t& residuals =
+	DispositionsTreeWalkState::disposition_t residuals =
 		this->get_residual_indices(*(state->get_disposition()), group_size);
 
 	for (
@@ -240,16 +251,20 @@ void Solver::run_disposition(
 	unsigned int phrase_len = this->get_phrase_char_count();
 	if (try_phrase_len == phrase_len)
 	{
+		this->log("|-Candidate");
+
 		// Candidate, proceed with hash check
 		if (true)
 		{
+			this->log("|-Valid");
+
 			// Valid, add it among result
 			result->push_back(try_phrase);
 		}
 	}
 }
 
-const DispositionsTreeWalkState::disposition_t& Solver::get_residual_indices(
+DispositionsTreeWalkState::disposition_t Solver::get_residual_indices(
 	const DispositionsTreeWalkState::disposition_t& disposition, unsigned int group_size) const
 {
 	DispositionsTreeWalkState::disposition_t ret_disposition;
@@ -257,7 +272,7 @@ const DispositionsTreeWalkState::disposition_t& Solver::get_residual_indices(
 	// Example: disposition = [2,3], group_size = 3 => ret = [0, 1]
 	for (unsigned int i = 0; i < group_size; i++)
 	{
-		if (std::find(disposition.begin(), disposition.end(), i) != disposition.end())
+		if (std::find(disposition.begin(), disposition.end(), i) == disposition.end())
 		{
 			ret_disposition.push_back(i);
 		}
