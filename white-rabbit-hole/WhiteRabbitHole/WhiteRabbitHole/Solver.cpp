@@ -16,6 +16,7 @@ Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path
 	this->log_stream = &log_stream;
 	this->words = 0;
 	this->use_words = 0;
+	this->result = 0;
 }
 
 Solver::Solver(const Solver& other)
@@ -35,24 +36,38 @@ Solver::Solver(const Solver& other)
 	{
 		*(this->use_words) = *(other.use_words);
 	}
+
+	this->result = new result_t();
+	if (other.result)
+	{
+		*(this->result) = *(other.result);
+	}
 }
 
 Solver::~Solver()
 {
 	if (this->words)
 	{
+		this->words->clear();
 		delete this->words;
 	}
 
 	if (this->use_words)
 	{
+		this->use_words->clear();
 		delete this->use_words;
+	}
+
+	if (this->result)
+	{
+		result->clear();
+		delete this->result;
 	}
 }
 
 // Public methods
 
-const Solver::result_t& Solver::solve()
+void Solver::solve()
 {
 	// Ensure resources are loaded.
 	this->load_all_res();
@@ -73,7 +88,8 @@ const Solver::result_t& Solver::solve()
 
 	if (!use_combinations)
 	{
-		return result_combinations;
+		*(this->result) = result_combinations;
+		return;
 	}
 
 	// Take dispositions of the found valid phrases and check hash check
@@ -88,7 +104,7 @@ const Solver::result_t& Solver::solve()
 	}
 	this->log("Valid dispositions search job done!");
 
-	return result_dispositions;
+	*(this->result) = result_dispositions;
 }
 
 void Solver::load_all_res()
@@ -115,7 +131,11 @@ void Solver::load_all_res()
 		this->log("Number of dipositions to try: " + std::to_string(disposition_count));
 	}
 
-	// Verbose
+	if (this->result) this->result->clear();
+	else this->result = new result_t();
+
+	bool verbose = false;
+	if (verbose)
 	{
 		this->log("Use words are (first 100):");
 		unsigned int i = 100;
@@ -127,9 +147,9 @@ void Solver::load_all_res()
 	}
 }
 
-void Solver::print_result(const result_t& result, std::ostream& stream)
+void Solver::print_result(std::ostream& stream) const
 {
-	for (result_t::const_iterator it = result.begin(); it != result.end(); it++)
+	for (result_t::const_iterator it = this->result->begin(); it != this->result->end(); it++)
 	{
 		stream << "- " << phrase_to_string(*it) << std::endl;
 	}

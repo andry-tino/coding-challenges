@@ -84,12 +84,13 @@ namespace challenge {
 			std::ostream* log_stream;
 			wordset_t* words;
 			usewordset_t* use_words;
+			result_t* result;
 
 		public:
 			/// <summary>
 			/// Executes the solving process.
 			/// </summary>
-			virtual const result_t& solve();
+			virtual void solve();
 
 			/// <summary>
 			/// Loads all on demand resources.
@@ -101,7 +102,7 @@ namespace challenge {
 			/// </summary>
 			/// <param name="result"></param>
 			/// <param name="stream"></param>
-			static void print_result(const result_t& result, std::ostream& stream);
+			void print_result(std::ostream& stream) const;
 
 		private:
 			void log(const std::string& what) const;
