@@ -35,11 +35,15 @@ namespace challenge {
 			const disposition_t* get_disposition() const;
 			void push_to_disposition(unsigned int index) const;
 			void pop_from_disposition() const;
-			bool is_disposition_in_cache(const disposition_t& disposition) const;
+			bool is_disposition_in_cache() const;
 			static std::string get_disposition_words_str(const disposition_t& disposition,
 				const std::vector<std::string>& words);
 		private:
+			void add_to_cache() const;
+			bool is_disposition_in_cache(const disposition_t& disposition) const;
+			std::string get_disposition_str(const disposition_t& disposition) const;
 			std::string get_disposition_str() const;
+			void sort_disposition(disposition_t& disposition) const;
 		};
 
 		/// <summary>
@@ -47,11 +51,12 @@ namespace challenge {
 		/// </summary>
 		class Solver
 		{
-		private:
-			typedef std::vector<std::string> wordset;
-			typedef std::vector<std::string> usewordset;
+		public:
 			typedef std::vector<std::vector<std::string>> result_t;
-			enum DispositionRunResult { No, Candidate, Valid };
+		private:
+			typedef std::vector<std::string> wordset_t;
+			typedef std::vector<std::string> usewordset_t;
+			enum DispositionRunResult { No, Candidate, Valid, Skipped };
 
 		public:
 			/// <summary>
@@ -77,8 +82,8 @@ namespace challenge {
 			std::string anagram_phrase;
 			std::string dbfile_path;
 			std::ostream* log_stream;
-			wordset* words;
-			usewordset* use_words;
+			wordset_t* words;
+			usewordset_t* use_words;
 
 		public:
 			/// <summary>
@@ -91,6 +96,13 @@ namespace challenge {
 			/// </summary>
 			void load_all_res();
 
+			/// <summary>
+			/// Prints the result in the provided stream.
+			/// </summary>
+			/// <param name="result"></param>
+			/// <param name="stream"></param>
+			static void print_result(const result_t& result, std::ostream& stream);
+
 		private:
 			void log(const std::string& what) const;
 			unsigned int get_disposition_count(unsigned int group_size) const;
@@ -102,15 +114,20 @@ namespace challenge {
 			unsigned int get_phrase_words_count() const;
 			unsigned int get_phrase_char_count() const;
 			void walk_dispositions(
+				const usewordset_t& usewordset,
 				unsigned int group_size,
 				const DispositionsTreeWalkState* state,
-				result_t* result) const;
+				result_t* result,
+				bool walkCombinationsOnly) const;
 			DispositionsTreeWalkState::disposition_t get_residual_indices(
+				const usewordset_t& usewordset,
 				const DispositionsTreeWalkState::disposition_t& disposition) const;
 			DispositionRunResult run_disposition(
+				const usewordset_t& usewordset,
 				unsigned int group_size,
 				const DispositionsTreeWalkState* state,
-				result_t* result) const;
+				result_t* result,
+				bool checkValid) const;
 		}; // class Solver
 
 	} // namespace whiterabbithole

@@ -34,7 +34,11 @@ int main()
 	std::getline(std::cin, std::string()); // Pause before starting
 
 	std::cout << "Starting algorithm..." << std::endl;
-	solver.solve();
+	Solver::result_t result = solver.solve();
+	std::cout << "Algorithm has ended!" << std::endl;
+
+	std::cout << "Printing result..." << std::endl;
+	Solver::print_result(result, std::cout);
 
 	// All good
 	return 0;

@@ -24,13 +24,13 @@ Solver::Solver(const Solver& other)
 	this->dbfile_path = other.dbfile_path;
 
 	// Copy the state as well
-	this->words = new wordset();
+	this->words = new wordset_t();
 	if (other.words)
 	{
 		*(this->words) = *(other.words);
 	}
 	
-	this->use_words = new usewordset();
+	this->use_words = new usewordset_t();
 	if (other.use_words)
 	{
 		*(this->use_words) = *(other.use_words);
@@ -59,17 +59,36 @@ const Solver::result_t& Solver::solve()
 
 	unsigned int words_count = this->get_phrase_words_count();
 
-	// Take dispositions of use_words in groups of words_count, so
-	// check the length of the sentence keeping into account the spaces for the first check
-	// and if positive, proceed with hash check
-	DispositionsTreeWalkState* state = new DispositionsTreeWalkState();
-	result_t result;
-	this->log("Executing...");
-	this->walk_dispositions(words_count, state, &result);
-	this->log("Job done!");
-	delete state;
+	bool use_combinations = true;
 
-	return result;
+	// Take combinations of use_words in groups of words_count, so
+	// check the length of the sentence keeping into account the spaces
+	DispositionsTreeWalkState* state = new DispositionsTreeWalkState();
+	result_t result_combinations; // If result_combinations == true => those are dispositions
+	this->log("Executing searching candidates...");
+	this->walk_dispositions(*(this->use_words), words_count, state, &result_combinations, use_combinations);
+	this->log("Candidate search job done!");
+	delete state;
+	this->log("Found " + std::to_string(result_combinations.size()) + " candidates!");
+
+	if (!use_combinations)
+	{
+		return result_combinations;
+	}
+
+	// Take dispositions of the found valid phrases and check hash check
+	result_t result_dispositions;
+	this->log("Executing searching valid dispositions (from each candidate combination)...");
+	for (result_t::const_iterator it = result_combinations.begin(); it != result_combinations.end(); it++)
+	{
+		this->log("Running dispositions on combination: " + phrase_to_string(*it)); // Verbose
+		state = new DispositionsTreeWalkState();
+		this->walk_dispositions(*it, words_count, state, &result_dispositions, false); // No caching = all dispositions
+		delete state;
+	}
+	this->log("Valid dispositions search job done!");
+
+	return result_dispositions;
 }
 
 void Solver::load_all_res()
@@ -100,11 +119,19 @@ void Solver::load_all_res()
 	{
 		this->log("Use words are (first 100):");
 		unsigned int i = 100;
-		for (usewordset::const_iterator it = this->use_words->begin(); it != this->use_words->end(); it++)
+		for (usewordset_t::const_iterator it = this->use_words->begin(); it != this->use_words->end(); it++)
 		{
 			if (i-- == 0) break;
 			this->log("- " + (*it));
 		}
+	}
+}
+
+void Solver::print_result(const result_t& result, std::ostream& stream)
+{
+	for (result_t::const_iterator it = result.begin(); it != result.end(); it++)
+	{
+		stream << "- " << phrase_to_string(*it) << std::endl;
 	}
 }
 
@@ -155,7 +182,7 @@ void Solver::load_words()
 		throw std::exception("Could not open dbfile");
 	}
 
-	this->words = new wordset();
+	this->words = new wordset_t();
 
 	std::string line;
 	while (std::getline(dbfile, line))
@@ -184,13 +211,13 @@ void Solver::process_words()
 		delete this->use_words;
 	}
 
-	this->use_words = new usewordset();
+	this->use_words = new usewordset_t();
 
 	// For each word, include it in use_words only if:
 	// 1. The word has length matching either of the words in the anagram phrase
 	//        - The anagram phrase shows the exact number of words in the original
 	// 2. All its characters are all contained in the anagram phrase
-	for (wordset::const_iterator it = this->words->begin(); it != this->words->end(); it++)
+	for (wordset_t::const_iterator it = this->words->begin(); it != this->words->end(); it++)
 	{
 		if (this->accept_word(*it))
 		{
@@ -243,22 +270,26 @@ unsigned int Solver::get_phrase_char_count() const
 }
 
 void Solver::walk_dispositions(
+	const usewordset_t& usewordset,
 	unsigned int group_size,
 	const DispositionsTreeWalkState* state,
-	result_t* result) const
+	result_t* result,
+	bool walkCombinationsOnly) const
 {
 	if (state->get_disposition()->size() == group_size)
 	{
-		// Process this disposition as this is a complete disposition
-		DispositionRunResult run_result = this->run_disposition(group_size, state, result);
-		this->log("Disposition: " +
-			DispositionsTreeWalkState::get_disposition_words_str(*(state->get_disposition()),
-				*(this->use_words)) + " - " + disposition_to_string(*(state->get_disposition()))); // Verbose
-
-		if (run_result != DispositionRunResult::No)
+		// Process this disposition as this is a complete disposition (leaf in the recursion-tree)
+		DispositionRunResult run_result = DispositionRunResult::Skipped;
+		if (!walkCombinationsOnly || (walkCombinationsOnly && !state->is_disposition_in_cache()))
 		{
-			this->log("Disposition: " + disposition_to_string(*(state->get_disposition())));
+			run_result = this->run_disposition(usewordset, group_size, state, result, !walkCombinationsOnly);
 		}
+
+		bool verbose = false;
+		if (verbose || (run_result != DispositionRunResult::No && run_result != DispositionRunResult::Skipped))
+			this->log("Disposition: " +
+			DispositionsTreeWalkState::get_disposition_words_str(*(state->get_disposition()), usewordset) +
+			" - " + disposition_to_string(*(state->get_disposition())));
 
 		if (run_result == DispositionRunResult::Candidate)
 		{
@@ -268,6 +299,10 @@ void Solver::walk_dispositions(
 		{
 			this->log("|- Valid");
 		}
+		else if (verbose && run_result == DispositionRunResult::Skipped)
+		{
+			this->log("|- Skipped");
+		}
 
 		return;
 	}
@@ -275,7 +310,7 @@ void Solver::walk_dispositions(
 	// A valid disposition has to be created as state contains an incomplete one
 	// Get residual array: all the indices not contained in state->disposition
 	DispositionsTreeWalkState::disposition_t residuals =
-		this->get_residual_indices(*(state->get_disposition()));
+		this->get_residual_indices(usewordset, *(state->get_disposition()));
 
 	for (
 		DispositionsTreeWalkState::disposition_t::const_iterator it = residuals.begin();
@@ -286,7 +321,7 @@ void Solver::walk_dispositions(
 		state->push_to_disposition(*it);
 
 		// Recursively process the new disposition
-		this->walk_dispositions(group_size, state, result);
+		this->walk_dispositions(usewordset, group_size, state, result, walkCombinationsOnly);
 
 		// Remove the residual as not needed anymore
 		state->pop_from_disposition();
@@ -294,11 +329,12 @@ void Solver::walk_dispositions(
 }
 
 Solver::DispositionRunResult Solver::run_disposition(
+	const usewordset_t& usewordset,
 	unsigned int group_size,
 	const DispositionsTreeWalkState* state,
-	result_t* result) const
+	result_t* result,
+	bool checkValid) const
 {
-	bool a = (*(state->get_disposition())).at(0) == 10 && (*(state->get_disposition())).at(1) == 32; //TBR
 	// Build the try-phrase
 	phrase_t try_phrase;
 	unsigned int interspace_count = group_size - 1;
@@ -309,7 +345,7 @@ Solver::DispositionRunResult Solver::run_disposition(
 		it++)
 	{
 		unsigned int index = *it;
-		std::string word = (*(this->use_words)).at(index);
+		std::string word = usewordset.at(index);
 		try_phrase.push_back(word);
 		try_phrase_len += word.length();
 	}
@@ -324,11 +360,18 @@ Solver::DispositionRunResult Solver::run_disposition(
 		// Candidate, proceed with hash check
 		run_result = DispositionRunResult::Candidate;
 
-		if (true)
+		if (true && checkValid) // TODO: MD5 check
 		{
 			// Valid, add it among result
 			run_result = DispositionRunResult::Valid;
 
+			result->push_back(try_phrase);
+		}
+
+		// We just want to analyze the candidates
+		if (!checkValid)
+		{
+			// In this case the results will contain all candidates
 			result->push_back(try_phrase);
 		}
 	}
@@ -337,13 +380,14 @@ Solver::DispositionRunResult Solver::run_disposition(
 }
 
 DispositionsTreeWalkState::disposition_t Solver::get_residual_indices(
+	const usewordset_t& usewordset,
 	const DispositionsTreeWalkState::disposition_t& disposition) const
 {
-	unsigned int use_words_count = this->use_words->size();
+	unsigned int usewordset_count = usewordset.size();
 	DispositionsTreeWalkState::disposition_t ret_disposition;
 
 	// Example: disposition = [2,3], group_size = 3 => ret = [0, 1]
-	for (unsigned int i = 0; i < use_words_count; i++)
+	for (unsigned int i = 0; i < usewordset_count; i++)
 	{
 		if (std::find(disposition.begin(), disposition.end(), i) == disposition.end())
 		{
@@ -376,8 +420,17 @@ DispositionsTreeWalkState::DispositionsTreeWalkState(const DispositionsTreeWalkS
 
 DispositionsTreeWalkState::~DispositionsTreeWalkState()
 {
-	if (this->disposition) delete this->disposition;
-	if (this->dispositions_cache) delete this->dispositions_cache;
+	if (this->disposition)
+	{
+		this->disposition->clear();
+		delete this->disposition;
+	}
+
+	if (this->dispositions_cache)
+	{
+		this->dispositions_cache->clear();
+		delete this->dispositions_cache;
+	}
 }
 
 // Public methods
@@ -387,27 +440,14 @@ const DispositionsTreeWalkState::disposition_t* DispositionsTreeWalkState::get_d
 	return this->disposition; // TODO: return const reference
 }
 
-std::string DispositionsTreeWalkState::get_disposition_str() const
+bool DispositionsTreeWalkState::is_disposition_in_cache() const
 {
-	return disposition_to_string(*(this->get_disposition()));
+	return this->is_disposition_in_cache(*(this->get_disposition()));
 }
 
 void DispositionsTreeWalkState::push_to_disposition(unsigned int index) const
 {
 	this->disposition->push_back(index);
-
-	if (this->use_cache)
-	{
-		// Add to the dictionary to keep track
-		std::pair<std::string, bool> cache_val =
-			std::pair<std::string, bool>(this->get_disposition_str(), true);
-		std::pair<std::map<std::string, bool>::iterator, bool> insert_res =
-			this->dispositions_cache->insert(cache_val);
-		if (!insert_res.second)
-		{
-			throw std::exception("Inconsistency in cache insertion");
-		}
-	}
 }
 
 std::string DispositionsTreeWalkState::get_disposition_words_str(const disposition_t& disposition,
@@ -424,12 +464,60 @@ std::string DispositionsTreeWalkState::get_disposition_words_str(const dispositi
 
 void DispositionsTreeWalkState::pop_from_disposition() const
 {
+	// Must happen in pop, before actually popping because the current disposition will be added to cache.
+	// If we do in push, then we would have the disposition already in cache before processing it
+	this->add_to_cache();
+
 	this->disposition->pop_back();
 }
 
 // Private methods
 
+void DispositionsTreeWalkState::add_to_cache() const
+{
+	if (!this->use_cache)
+	{
+		return;
+	}
+
+	// Rebuild the disposition sorting ascending, this is because we
+	// want to use the cache to store combinations
+	disposition_t sorted_disposition = *(this->get_disposition()); // Copy
+	this->sort_disposition(sorted_disposition);
+
+	// Add to the dictionary to keep track
+	std::pair<std::string, bool> cache_val =
+		std::pair<std::string, bool>(this->get_disposition_str(sorted_disposition), true);
+	std::pair<std::map<std::string, bool>::iterator, bool> insert_res =
+		this->dispositions_cache->insert(cache_val);
+
+	if (!insert_res.second)
+	{
+		// Was not inserted because already present
+	}
+}
+
 bool DispositionsTreeWalkState::is_disposition_in_cache(const disposition_t& disposition) const
 {
-	return this->dispositions_cache->find(disposition_to_string(disposition)) != this->dispositions_cache->end();
+	// Rebuild the disposition sorting ascending, this is because we
+	// want to use the cache to store combinations
+	disposition_t sorted_disposition = disposition; // Copy
+	this->sort_disposition(sorted_disposition);
+
+	return this->dispositions_cache->find(disposition_to_string(sorted_disposition)) != this->dispositions_cache->end();
+}
+
+std::string DispositionsTreeWalkState::get_disposition_str(const disposition_t& disposition) const
+{
+	return disposition_to_string(disposition);
+}
+
+std::string DispositionsTreeWalkState::get_disposition_str() const
+{
+	return disposition_to_string(*(this->get_disposition()));
+}
+
+void DispositionsTreeWalkState::sort_disposition(disposition_t& disposition) const
+{
+	std::sort(disposition.begin(), disposition.end());
 }
