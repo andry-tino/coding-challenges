@@ -79,7 +79,7 @@ namespace Challenge.WebIntSorter.Controllers
         /// be allowed to query the job status via the <see cref="Get"/> method.
         /// </remarks>
         [HttpPost]
-        public ActionResult Post(IEnumerable<int> sequence)
+        public CreateJobResponse Post(IEnumerable<int> sequence)
         {
             // Validate input
             if (sequence == null)
@@ -100,7 +100,7 @@ namespace Challenge.WebIntSorter.Controllers
             Response.Headers.Add(HeaderNames.CacheControl, "no-cache");
 
             // Return response
-            return CreatedAtAction("post", new { id = job.Id });
+            return new CreateJobResponse() { Id = job.Id };
         }
 
         private SortingJob Create(IEnumerable<int> input)
@@ -139,5 +139,20 @@ namespace Challenge.WebIntSorter.Controllers
                 job.Duration = stopwatch.ElapsedMilliseconds;
             }
         }
+
+        #region Types
+
+        /// <summary>
+        /// Describes the response to <see cref="Post"/>.
+        /// </summary>
+        public class CreateJobResponse
+        {
+            /// <summary>
+            /// The id of the newly created job.
+            /// </summary>
+            public string Id { get; set; }
+        }
+
+        #endregion
     }
 }
