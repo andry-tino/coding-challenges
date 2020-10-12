@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Cors;
 
 using Challenge.WebIntSorter.Models;
+using Microsoft.Net.Http.Headers;
 
 namespace Challenge.WebIntSorter.Controllers
 {
@@ -41,6 +43,9 @@ namespace Challenge.WebIntSorter.Controllers
         [HttpGet]
         public IEnumerable<SortingJob> GetAll()
         {
+            // Make sure we hint the client that the response should not be cached
+            Response.Headers.Add(HeaderNames.CacheControl, "no-cache");
+
             return this.jobsCollection.RetrieveJobs();
         }
 
@@ -52,7 +57,15 @@ namespace Challenge.WebIntSorter.Controllers
         [HttpGet("{id}")]
         public SortingJob Get(string id)
         {
-            return this.jobsCollection.RetrieveJob(id);
+            var job = this.jobsCollection.RetrieveJob(id);
+
+            // Cache only if the status is not pending
+            if (job == null || job.Status != SortingJobStatus.Pending)
+            {
+                Response.Headers.Add(HeaderNames.CacheControl, "private");
+            }
+
+            return job;
         }
 
         /// <summary>
@@ -80,6 +93,11 @@ namespace Challenge.WebIntSorter.Controllers
             Task.Run(() => this.EnqueueJob(job));
 
             this.logger.LogInformation($"Enqueued sorting job '{job.Id}' with {sequence.Count()} elements to sort");
+
+            // Make sure we hint the client that the response should not be cached
+            // Though this is not really necessary because as per HTTP 1.1, POST
+            // should not be cached, we do this just to be 100% sure
+            Response.Headers.Add(HeaderNames.CacheControl, "no-cache");
 
             // Return response
             return CreatedAtAction("post", new { id = job.Id });
