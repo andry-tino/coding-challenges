@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,6 +44,9 @@ namespace Challenge.WebIntSorter
             // Add CORS capabilities
             services.AddCors(this.ConfigureCors);
 
+            // Add response caching capabilities
+            services.AddResponseCaching(this.ConfigureResponseCaching);
+
             // Add the controllers defined in this assembly
             services.AddControllers()
                 .AddJsonOptions(this.ConfigureJsonSerialization);
@@ -70,6 +74,8 @@ namespace Challenge.WebIntSorter
 
             app.UseRouting();
 
+            app.UseResponseCaching();
+
             app.UseCors(Constants.Service.CorsReactClientAllowSpecificOriginsPolicyName);
 
             app.UseAuthorization();
@@ -93,6 +99,11 @@ namespace Challenge.WebIntSorter
 
         private void ConfigureJsonSerialization(JsonOptions options)
         {
+        }
+
+        private void ConfigureResponseCaching(ResponseCachingOptions options)
+        {
+            options.SizeLimit = 100 * 1000; // Cache size should not exceed 100MB
         }
     }
 }

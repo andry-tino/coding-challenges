@@ -20,7 +20,7 @@ namespace Challenge.WebIntSorter.Models
         /// Adds a new job in the database.
         /// </summary>
         /// <param name="job"></param>
-        public void AddJob(SortingJob job)
+        public virtual void AddJob(SortingJob job)
         {
             this.jobs.Add(job.Id, job);
         }
@@ -30,7 +30,7 @@ namespace Challenge.WebIntSorter.Models
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public SortingJob RetrieveJob(string id)
+        public virtual SortingJob RetrieveJob(string id)
         {
             this.jobs.TryGetValue(id, out SortingJob job);
             return job;
@@ -40,7 +40,7 @@ namespace Challenge.WebIntSorter.Models
         /// Gets all stored jobs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<SortingJob> RetrieveJobs()
+        public virtual IEnumerable<SortingJob> RetrieveJobs()
         {
             return this.jobs.Values;
         }
