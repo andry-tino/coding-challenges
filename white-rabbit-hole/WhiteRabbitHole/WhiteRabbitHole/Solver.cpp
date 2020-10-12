@@ -1,7 +1,11 @@
 // Solver.cpp
 
+#include <exception>
+#include <algorithm>
+
 #include "Solver.h"
 #include "Utils.h"
+#include "Hashing.h"
 
 using namespace challenge::whiterabbithole;
 
@@ -9,11 +13,13 @@ using namespace challenge::whiterabbithole;
 
 // Ctors
 
-Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream& log_stream)
+Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path,
+	const std::string& phrase_hash, std::ostream& log_stream)
 {
 	this->anagram_phrase = anagram_phrase;
 	this->dbfile_path = dbfile_path;
 	this->log_stream = &log_stream;
+	this->phrase_hash = phrase_hash;
 	this->words = 0;
 	this->use_words = 0;
 	this->result = 0;
@@ -380,23 +386,34 @@ Solver::DispositionRunResult Solver::run_disposition(
 		// Candidate, proceed with hash check
 		run_result = DispositionRunResult::Candidate;
 
-		if (true && checkValid) // TODO: MD5 check
+		if (checkValid && this->check_phrase_hash(try_phrase))
 		{
-			// Valid, add it among result
 			run_result = DispositionRunResult::Valid;
-
-			result->push_back(try_phrase);
+			result->push_back(try_phrase); // Result to contain all valids
 		}
-
-		// We just want to analyze the candidates
-		if (!checkValid)
+		else if (!checkValid) // We just want to analyze the candidates
 		{
-			// In this case the results will contain all candidates
-			result->push_back(try_phrase);
+			result->push_back(try_phrase); // Result to contain all candidates
 		}
 	}
 
 	return run_result;
+}
+
+bool Solver::check_phrase_hash(const phrase_t& phrase) const
+{
+	return this->phrase_hash.compare(get_hash(this->phrase_to_string(phrase))) == 0;
+}
+
+std::string Solver::phrase_to_string(const phrase_t& phrase) const
+{
+	std::string str_phrase;
+	for (phrase_t::const_iterator it = phrase.begin(); it != phrase.end(); it++)
+	{
+		str_phrase += ((*it) + ((it+1 == phrase.end()) ? "" : " "));
+	}
+
+	return str_phrase;
 }
 
 DispositionsTreeWalkState::disposition_t Solver::get_residual_indices(

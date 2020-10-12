@@ -6,10 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <exception>
 #include <vector>
 #include <map>
-#include <algorithm>
 
 namespace challenge {
 	namespace whiterabbithole {
@@ -65,7 +63,8 @@ namespace challenge {
 			/// <param name="anagram_phrase">The anagram phrase to handle.</param>
 			/// <param name="dbfile_path">The path to the words file.</param>
 			/// <param name="log_stream">Log stream.</param>
-			Solver(const std::string& anagram_phrase, const std::string& dbfile_path, std::ostream& log_stream);
+			Solver(const std::string& anagram_phrase, const std::string& dbfile_path,
+				const std::string& phrase_hash, std::ostream& log_stream);
 
 			/// <summary>
 			/// Copy initializes a new instance of this class.
@@ -81,6 +80,7 @@ namespace challenge {
 		private:
 			std::string anagram_phrase;
 			std::string dbfile_path;
+			std::string phrase_hash;
 			std::ostream* log_stream;
 			wordset_t* words;
 			usewordset_t* use_words;
@@ -129,6 +129,8 @@ namespace challenge {
 				const DispositionsTreeWalkState* state,
 				result_t* result,
 				bool checkValid) const;
+			bool check_phrase_hash(const phrase_t& phrase) const;
+			std::string phrase_to_string(const phrase_t& phrase) const;
 		}; // class Solver
 
 	} // namespace whiterabbithole

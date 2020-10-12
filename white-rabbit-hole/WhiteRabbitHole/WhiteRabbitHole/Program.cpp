@@ -28,7 +28,7 @@ int main()
 	std::cout << "Word dbfile location acquired: '" << dbfile_path << "'" << std::endl;
 
 	// Allocating solver and running it
-	Solver solver(anagram_phrase, dbfile_path, std::cout);
+	Solver solver(anagram_phrase, dbfile_path, phrase_hash, std::cout);
 	solver.load_all_res(); // Will log meaningful values out
 
 	std::getline(std::cin, std::string()); // Pause before starting
