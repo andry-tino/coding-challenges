@@ -98,7 +98,7 @@ void Solver::solve()
 		return;
 	}
 
-	// Take dispositions of the found valid phrases and check hash check
+	// Take dispositions of the found valid phrases and check hash
 	result_t result_dispositions;
 	this->log("Executing searching valid dispositions (from each candidate combination)...");
 	for (result_t::const_iterator it = result_combinations.begin(); it != result_combinations.end(); it++)
@@ -323,7 +323,7 @@ void Solver::walk_dispositions(
 		}
 		else if (run_result == DispositionRunResult::Valid)
 		{
-			this->log("|- Valid");
+			this->log("|- Valid => !!FOUND ONE!!");
 		}
 		else if (verbose && run_result == DispositionRunResult::Skipped)
 		{
@@ -402,7 +402,9 @@ Solver::DispositionRunResult Solver::run_disposition(
 
 bool Solver::check_phrase_hash(const phrase_t& phrase) const
 {
-	return this->phrase_hash.compare(get_hash(this->phrase_to_string(phrase))) == 0;
+	return compare_hashes(
+		this->phrase_hash,
+		get_hash(this->phrase_to_string(phrase)));
 }
 
 std::string Solver::phrase_to_string(const phrase_t& phrase) const
