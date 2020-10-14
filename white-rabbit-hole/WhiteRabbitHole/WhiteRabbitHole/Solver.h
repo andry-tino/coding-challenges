@@ -20,29 +20,24 @@ namespace challenge {
 		struct DispositionsTreeWalkState {
 		public:
 			typedef std::vector<unsigned int> disposition_t;
-			// Stores the disposition str representation fx: "0,34,12"
-			typedef std::map<std::string, bool> dispositions_cache_t;
 		public:
-			DispositionsTreeWalkState(bool use_cache = true);
+			DispositionsTreeWalkState(bool use_ordering = true);
 			DispositionsTreeWalkState(const DispositionsTreeWalkState& other);
 			~DispositionsTreeWalkState();
 		private:
 			bool use_cache;
 			disposition_t* disposition;
-			dispositions_cache_t* dispositions_cache;
 		public:
 			const disposition_t* get_disposition() const;
 			void push_to_disposition(unsigned int index) const;
 			void pop_from_disposition() const;
-			bool is_disposition_in_cache() const;
+			bool is_disposition_ordered() const;
 			static std::string get_disposition_words_str(const disposition_t& disposition,
 				const std::vector<std::string>& words);
 		private:
-			void add_to_cache() const;
-			bool is_disposition_in_cache(const disposition_t& disposition) const;
+			bool is_disposition_ordered(const disposition_t& disposition) const;
 			std::string get_disposition_str(const disposition_t& disposition) const;
 			std::string get_disposition_str() const;
-			void sort_disposition(disposition_t& disposition) const;
 		};
 
 		/// <summary>

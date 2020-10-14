@@ -309,7 +309,9 @@ void Solver::walk_dispositions(
 	{
 		// Process this disposition as this is a complete disposition (leaf in the recursion-tree)
 		DispositionRunResult run_result = DispositionRunResult::Skipped;
-		if (!walkCombinationsOnly || (walkCombinationsOnly && !state->is_disposition_in_cache()))
+		// Ordered disposition processing allows us to evaluate only combinations of words. It is the
+		// same concepts as caching, but caching will be really memory-intensive
+		if (!walkCombinationsOnly || (walkCombinationsOnly && !state->is_disposition_ordered()))
 		{
 			run_result = this->run_disposition(usewordset, group_size, state, result, !walkCombinationsOnly);
 		}
@@ -448,16 +450,12 @@ DispositionsTreeWalkState::DispositionsTreeWalkState(bool use_cache)
 {
 	this->use_cache = use_cache;
 	this->disposition = new disposition_t();
-	this->dispositions_cache = new dispositions_cache_t();
 }
 
 DispositionsTreeWalkState::DispositionsTreeWalkState(const DispositionsTreeWalkState& other)
 {
 	this->disposition = new disposition_t();
 	*(this->disposition) = *(other.disposition);
-
-	this->dispositions_cache = new dispositions_cache_t();
-	*(this->dispositions_cache) = *(other.dispositions_cache);
 }
 
 DispositionsTreeWalkState::~DispositionsTreeWalkState()
@@ -466,12 +464,6 @@ DispositionsTreeWalkState::~DispositionsTreeWalkState()
 	{
 		this->disposition->clear();
 		delete this->disposition;
-	}
-
-	if (this->dispositions_cache)
-	{
-		this->dispositions_cache->clear();
-		delete this->dispositions_cache;
 	}
 }
 
@@ -482,9 +474,9 @@ const DispositionsTreeWalkState::disposition_t* DispositionsTreeWalkState::get_d
 	return this->disposition; // TODO: return const reference
 }
 
-bool DispositionsTreeWalkState::is_disposition_in_cache() const
+bool DispositionsTreeWalkState::is_disposition_ordered() const
 {
-	return this->is_disposition_in_cache(*(this->get_disposition()));
+	return this->is_disposition_ordered(*(this->get_disposition()));
 }
 
 void DispositionsTreeWalkState::push_to_disposition(unsigned int index) const
@@ -506,47 +498,30 @@ std::string DispositionsTreeWalkState::get_disposition_words_str(const dispositi
 
 void DispositionsTreeWalkState::pop_from_disposition() const
 {
-	// Must happen in pop, before actually popping because the current disposition will be added to cache.
-	// If we do in push, then we would have the disposition already in cache before processing it
-	this->add_to_cache();
-
 	this->disposition->pop_back();
 }
 
 // Private methods
 
-void DispositionsTreeWalkState::add_to_cache() const
+// Ordering mst be ascending, fx: 2,4,7
+bool DispositionsTreeWalkState::is_disposition_ordered(const disposition_t& disposition) const
 {
-	if (!this->use_cache)
+	if (disposition.size() <= 1)
 	{
-		return;
+		return true;
 	}
 
-	// Rebuild the disposition sorting ascending, this is because we
-	// want to use the cache to store combinations
-	disposition_t sorted_disposition = *(this->get_disposition()); // Copy
-	this->sort_disposition(sorted_disposition);
-
-	// Add to the dictionary to keep track
-	std::pair<std::string, bool> cache_val =
-		std::pair<std::string, bool>(this->get_disposition_str(sorted_disposition), true);
-	std::pair<std::map<std::string, bool>::iterator, bool> insert_res =
-		this->dispositions_cache->insert(cache_val);
-
-	if (!insert_res.second)
+	// Guaranteed at least two elements from here on
+	for (disposition_t::const_iterator it = disposition.begin()+1; it != disposition.end(); it++)
 	{
-		// Was not inserted because already present
+		// In a vector, push_front is used, so if we want asc order, we need to reverse
+		if (!(*it < *(it - 1)))
+		{
+			return false;
+		}
 	}
-}
 
-bool DispositionsTreeWalkState::is_disposition_in_cache(const disposition_t& disposition) const
-{
-	// Rebuild the disposition sorting ascending, this is because we
-	// want to use the cache to store combinations
-	disposition_t sorted_disposition = disposition; // Copy
-	this->sort_disposition(sorted_disposition);
-
-	return this->dispositions_cache->find(disposition_to_string(sorted_disposition)) != this->dispositions_cache->end();
+	return true;
 }
 
 std::string DispositionsTreeWalkState::get_disposition_str(const disposition_t& disposition) const
@@ -557,9 +532,4 @@ std::string DispositionsTreeWalkState::get_disposition_str(const disposition_t& 
 std::string DispositionsTreeWalkState::get_disposition_str() const
 {
 	return disposition_to_string(*(this->get_disposition()));
-}
-
-void DispositionsTreeWalkState::sort_disposition(disposition_t& disposition) const
-{
-	std::sort(disposition.begin(), disposition.end());
 }

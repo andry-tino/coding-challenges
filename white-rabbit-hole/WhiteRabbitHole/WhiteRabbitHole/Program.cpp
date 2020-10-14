@@ -36,9 +36,12 @@ int main()
 	std::cout << "Starting algorithm..." << std::endl;
 	solver.solve();
 	std::cout << "Algorithm has ended!" << std::endl;
+	std::cout << std::endl;
 
 	std::cout << "Printing result..." << std::endl;
+	std::cout << "==================" << std::endl;
 	solver.print_result(std::cout);
+	std::cout << "==================" << std::endl;
 
 	// All good
 	return 0;
