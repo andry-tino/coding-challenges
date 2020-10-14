@@ -90,7 +90,8 @@ void Solver::solve()
 	this->walk_dispositions(*(this->use_words), words_count, state, &result_combinations, use_combinations);
 	this->log("Candidate search job done!");
 	delete state;
-	this->log("Found " + std::to_string(result_combinations.size()) + " candidates!");
+	size_t result_combinations_size = result_combinations.size();
+	this->log("Found " + std::to_string(result_combinations_size) + " candidates!");
 
 	if (!use_combinations)
 	{
@@ -101,9 +102,11 @@ void Solver::solve()
 	// Take dispositions of the found valid phrases and check hash
 	result_t result_dispositions;
 	this->log("Executing searching valid dispositions (from each candidate combination)...");
-	for (result_t::const_iterator it = result_combinations.begin(); it != result_combinations.end(); it++)
+	unsigned int i = 1;
+	for (result_t::const_iterator it = result_combinations.begin(), end = result_combinations.end(); it != end; it++, i++)
 	{
-		this->log("Running dispositions on combination: " + phrase_to_string(*it)); // Verbose
+		this->log("Running dispositions on combination: " + phrase_to_string(*it) + " - " +
+			std::to_string(i) + "/" + std::to_string(result_combinations_size)); // Verbose
 		state = new DispositionsTreeWalkState();
 		this->walk_dispositions(*it, words_count, state, &result_dispositions, false); // No caching = all dispositions
 		delete state;
