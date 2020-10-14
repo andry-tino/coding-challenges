@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <algorithm>
+#include <unordered_map>
 
 #include "Solver.h"
 #include "Utils.h"
@@ -22,6 +23,7 @@ Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path
 	this->phrase_hash = phrase_hash;
 	this->words = 0;
 	this->use_words = 0;
+	this->alphabet = 0;
 	this->result = 0;
 }
 
@@ -43,6 +45,12 @@ Solver::Solver(const Solver& other)
 		*(this->use_words) = *(other.use_words);
 	}
 
+	this->alphabet = new alphabet_t();
+	if (other.alphabet)
+	{
+		*(this->alphabet) = *(other.alphabet);
+	}
+
 	this->result = new result_t();
 	if (other.result)
 	{
@@ -62,6 +70,12 @@ Solver::~Solver()
 	{
 		this->use_words->clear();
 		delete this->use_words;
+	}
+
+	if (this->alphabet)
+	{
+		this->alphabet->clear();
+		delete this->alphabet;
 	}
 
 	if (this->result)
@@ -128,7 +142,7 @@ void Solver::load_all_res()
 			this->log("Words loaded: " + std::to_string(this->words->size()));
 		}
 
-		// Extract the usewords from words
+		// Extract the usewords from words (and also handle the alphabet)
 		this->log("Processing words...");
 		this->process_words();
 		this->log("Usewords loaded: " + std::to_string(this->use_words->size()));
@@ -142,6 +156,13 @@ void Solver::load_all_res()
 
 	if (this->result) this->result->clear();
 	else this->result = new result_t();
+
+	std::string alphabet_str;
+	for (alphabet_t::const_iterator it = this->alphabet->begin(); it != this->alphabet->end(); it++)
+	{
+		alphabet_str += std::string(1, *it) + " ";
+	}
+	this->log("Alphabet: " + alphabet_str);
 
 	bool verbose = false;
 	if (verbose)
@@ -237,10 +258,13 @@ void Solver::process_words()
 	// Check the set of usewords has not previously created, in which case delete
 	if (this->use_words)
 	{
+		this->use_words->clear();
 		delete this->use_words;
 	}
+	this->use_words = new usewordset_t(); // Reset (in case)
 
-	this->use_words = new usewordset_t();
+	// Here we also build the alphabet
+	std::unordered_map<char, bool> alphabet_map;
 
 	// For each word, include it in use_words only if:
 	// 1. The word has length matching either of the words in the anagram phrase
@@ -251,7 +275,26 @@ void Solver::process_words()
 		if (this->accept_word(*it))
 		{
 			this->use_words->push_back(*it);
+
+			// Process the word to extract its symbols and add them to the alphabet
+			for (size_t i = 0, l = it->length(); i < l; i++)
+			{
+				alphabet_map[it->at(i)] = true;
+			}
 		}
+	}
+
+	// Check the alphabet has not previously created, in which case delete
+	if (this->alphabet)
+	{
+		this->alphabet->clear();
+		delete this->alphabet;
+	}
+	this->alphabet = new alphabet_t(); // Reset (in case)
+	// Extract the vector of symbols for the alphabet
+	for (std::unordered_map<char, bool>::const_iterator it = alphabet_map.begin(); it != alphabet_map.end(); it++)
+	{
+		this->alphabet->push_back(it->first);
 	}
 }
 

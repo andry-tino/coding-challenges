@@ -9,10 +9,10 @@
 #include <vector>
 #include <map>
 
+#include "Common.h"
+
 namespace challenge {
 	namespace whiterabbithole {
-
-		typedef std::vector<std::string> phrase_t;
 
 		/// <summary>
 		/// Represents a utility object for algorithmic purposes.
@@ -80,6 +80,7 @@ namespace challenge {
 			std::ostream* log_stream;
 			wordset_t* words;
 			usewordset_t* use_words;
+			alphabet_t* alphabet;
 			result_t* result;
 
 		public:
