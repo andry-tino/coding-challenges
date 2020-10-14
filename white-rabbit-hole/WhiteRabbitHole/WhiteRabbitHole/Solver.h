@@ -20,6 +20,7 @@ namespace challenge {
 		struct DispositionsTreeWalkState {
 		public:
 			typedef std::vector<unsigned int> disposition_t;
+			// Stores the disposition str representation fx: "0,34,12"
 			typedef std::map<std::string, bool> dispositions_cache_t;
 		public:
 			DispositionsTreeWalkState(bool use_cache = true);
