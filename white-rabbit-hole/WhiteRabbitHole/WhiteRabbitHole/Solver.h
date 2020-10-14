@@ -10,6 +10,7 @@
 #include <map>
 
 #include "Common.h"
+#include "Histogram.h"
 
 namespace challenge {
 	namespace whiterabbithole {
@@ -78,6 +79,7 @@ namespace challenge {
 			std::string dbfile_path;
 			std::string phrase_hash;
 			std::ostream* log_stream;
+			Histogram* anagram_phrase_histo;
 			wordset_t* words;
 			usewordset_t* use_words;
 			alphabet_t* alphabet;
@@ -126,6 +128,7 @@ namespace challenge {
 				const DispositionsTreeWalkState* state,
 				result_t* result,
 				bool checkValid) const;
+			bool is_phrase_candidate(const phrase_t& phrase) const;
 			bool check_phrase_hash(const phrase_t& phrase) const;
 			std::string phrase_to_string(const phrase_t& phrase) const;
 		}; // class Solver

@@ -21,6 +21,7 @@ Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path
 	this->dbfile_path = dbfile_path;
 	this->log_stream = &log_stream;
 	this->phrase_hash = phrase_hash;
+	this->anagram_phrase_histo = new Histogram(this->anagram_phrase);
 	this->words = 0;
 	this->use_words = 0;
 	this->alphabet = 0;
@@ -30,6 +31,7 @@ Solver::Solver(const std::string& anagram_phrase, const std::string& dbfile_path
 Solver::Solver(const Solver& other)
 {
 	this->anagram_phrase = other.anagram_phrase;
+	this->anagram_phrase_histo = new Histogram(this->anagram_phrase);
 	this->dbfile_path = other.dbfile_path;
 
 	// Copy the state as well
@@ -37,6 +39,11 @@ Solver::Solver(const Solver& other)
 	if (other.words)
 	{
 		*(this->words) = *(other.words);
+	}
+
+	if (other.log_stream)
+	{
+		this->log_stream = other.log_stream;
 	}
 	
 	this->use_words = new usewordset_t();
@@ -325,7 +332,9 @@ bool Solver::accept_word(const std::string& word) const
 		}
 	}
 
-	return true;
+	//return true; // TODO: Remove
+
+	return *(this->anagram_phrase_histo) >= Histogram(word);
 }
 
 unsigned int Solver::get_phrase_words_count() const
@@ -411,8 +420,6 @@ Solver::DispositionRunResult Solver::run_disposition(
 {
 	// Build the try-phrase
 	phrase_t try_phrase;
-	unsigned int interspace_count = group_size - 1;
-	unsigned int try_phrase_len = interspace_count; // sum of chars in all elements + interspaces
 	for (
 		DispositionsTreeWalkState::disposition_t::const_iterator it = state->get_disposition()->begin();
 		it != state->get_disposition()->end();
@@ -421,15 +428,13 @@ Solver::DispositionRunResult Solver::run_disposition(
 		unsigned int index = *it;
 		std::string word = usewordset.at(index);
 		try_phrase.push_back(word);
-		try_phrase_len += word.length();
 	}
 
 	// Try the try-phrase
 	// 1. Check the phrase length first
 	// 2. If the length matches, move to the hash check
-	unsigned int phrase_len = this->get_phrase_char_count();
 	DispositionRunResult run_result = DispositionRunResult::No;
-	if (try_phrase_len == phrase_len)
+	if (this->is_phrase_candidate(try_phrase))
 	{
 		// Candidate, proceed with hash check
 		run_result = DispositionRunResult::Candidate;
@@ -446,6 +451,12 @@ Solver::DispositionRunResult Solver::run_disposition(
 	}
 
 	return run_result;
+}
+
+bool Solver::is_phrase_candidate(const phrase_t& phrase) const
+{
+	return this->phrase_to_string(phrase).length() == this->get_phrase_char_count() &&
+		Histogram(this->phrase_to_string(phrase)) == *(this->anagram_phrase_histo);
 }
 
 bool Solver::check_phrase_hash(const phrase_t& phrase) const
