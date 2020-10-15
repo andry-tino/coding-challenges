@@ -32,13 +32,19 @@ namespace PromoEng.Engine
         public Sku(string id, float unitPrice, string name = null)
         {
             this.Id = id ?? throw new ArgumentNullException(nameof(id));
+            if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("The identifier must be a valid string", nameof(id));
+            }
+
             this.UnitPrice = Math.Abs(unitPrice);
             this.Name = name ?? id;
         }
 
+        /// <inheritdoc/>
         public int CompareTo([AllowNull] Sku other)
         {
-            throw new NotImplementedException();
+            return this.Id == other.Id ? 0 : -1;
         }
     }
 }

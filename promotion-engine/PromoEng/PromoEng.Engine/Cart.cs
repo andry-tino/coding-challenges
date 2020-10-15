@@ -68,7 +68,11 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => this.Skus.GetEnumerator();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Converts the cart into a string representation providing all the info
+        /// about the cart.
+        /// </summary>
+        /// <returns>A <see cref="string"/>.</returns>
         public override string ToString()
         {
             return base.ToString();
@@ -77,7 +81,18 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         public object Clone()
         {
-            throw new NotImplementedException();
+            return new Cart();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public float Total
+        {
+            get
+            {
+                return 0;
+            }
         }
 
         #region Types
@@ -87,11 +102,26 @@ namespace PromoEng.Engine
         /// </summary>
         internal class SkuCartEntry
         {
+            /// <summary>
+            /// Gets or sets the quantity for the entry.
+            /// </summary>
             public int Quantity { get; set; }
 
+            /// <summary>
+            /// Gets or sets the overall entry price.
+            /// </summary>
             public float Price { get; set; }
 
+            /// <summary>
+            /// Gets or sets the <see cref="IPromotionRule"/> identifier responsible for this entry.
+            /// When this is <code>null</code>, then the entry has not been processed by a rule.
+            /// </summary>
             public string PromotionRuleId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a description associated to this entry.
+            /// </summary>
+            public string Description { get; set; }
         }
 
         #endregion

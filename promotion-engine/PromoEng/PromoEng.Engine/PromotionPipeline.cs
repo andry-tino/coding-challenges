@@ -21,10 +21,15 @@ namespace PromoEng.Engine
         /// <param name="cart">The cart to which the pipeline should be applied to.</param>
         public Cart Apply(Cart cart)
         {
+            if (cart == null)
+            {
+                return null;
+            }
+
             var result = cart;
             foreach (var rule in this.rules)
             {
-                result = rule.Evaluate(result);
+                result = this.RunRule(rule, result);
             }
 
             return result;
@@ -42,6 +47,11 @@ namespace PromoEng.Engine
             }
 
             this.rules.Add(rule);
+        }
+
+        protected virtual Cart RunRule(IPromotionRule rule, Cart cart)
+        {
+            return rule.Evaluate(cart);
         }
     }
 }
