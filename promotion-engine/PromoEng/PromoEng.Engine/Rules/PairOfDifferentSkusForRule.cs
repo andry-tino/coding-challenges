@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace PromoEng.Engine.Rules
 {
@@ -10,30 +10,35 @@ namespace PromoEng.Engine.Rules
     public class PairOfDifferentSkusForRule : IPromotionRule
     {
         /// <summary>
-        /// Gets the identifier of the first <see cref="Sku"/>.
+        /// Gets the unique identifier of this rule.
         /// </summary>
-        public string Sku1Id { get; }
+        public static string RuleId = typeof(PairOfDifferentSkusForRule).Name;
 
         /// <summary>
-        /// Gets the identifier of the second <see cref="Sku"/>.
+        /// Gets the first <see cref="Sku"/>.
         /// </summary>
-        public string Sku2Id { get; }
+        public Sku Sku1 { get; }
+
+        /// <summary>
+        /// Gets the second <see cref="Sku"/>.
+        /// </summary>
+        public Sku Sku2 { get; }
 
         /// <summary>
         /// Gets the total price to assign to the couple.
         /// </summary>
-        public float TotalPrice { get; }
+        public decimal TotalPrice { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PairOfDifferentSkusForRule"/> class.
         /// </summary>
-        /// <param name="sku1Id">The identifier of the first <see cref="Sku"/>.</param>
-        /// <param name="sku2Id">The identifier of the second <see cref="Sku"/>.</param>
+        /// <param name="sku1">The first <see cref="Sku"/>.</param>
+        /// <param name="sku2">The second <see cref="Sku"/>.</param>
         /// <param name="totalPrice">The total price to assign to the couple.</param>
-        public PairOfDifferentSkusForRule(string sku1Id, string sku2Id, float totalPrice)
+        public PairOfDifferentSkusForRule(Sku sku1, Sku sku2, decimal totalPrice)
         {
-            this.Sku1Id = sku1Id ?? throw new ArgumentNullException(nameof(sku1Id));
-            this.Sku2Id = sku2Id ?? throw new ArgumentNullException(nameof(sku2Id));
+            this.Sku1 = sku1 ?? throw new ArgumentNullException(nameof(sku1));
+            this.Sku2 = sku2 ?? throw new ArgumentNullException(nameof(sku2));
             this.TotalPrice = Math.Abs(totalPrice);
         }
 
@@ -46,9 +51,51 @@ namespace PromoEng.Engine.Rules
             }
 
             var cart = new Cart();
-            foreach (var item in originalCart)
-            {
+            Func<Cart.SkuCartEntry, bool> candidateConditionSku1 =
+                (entry) => entry.Sku.CompareTo(this.Sku1) == 0 && entry.PromotionRuleId == null;
+            Func<Cart.SkuCartEntry, bool> candidateConditionSku2 =
+                (entry) => entry.Sku.CompareTo(this.Sku2) == 0 && entry.PromotionRuleId == null;
 
+            // Get all candidate Sku1 entries
+            int candidatesSku1Count = originalCart
+                .Where(entry => candidateConditionSku1(entry))
+                .Sum(entry => entry.Quantity);
+            int candidatesSku2Count = originalCart
+                .Where(entry => candidateConditionSku2(entry))
+                .Sum(entry => entry.Quantity);
+
+            // Copy all the non-candidates to new cart
+            foreach (var entry in originalCart)
+            {
+                if (!candidateConditionSku1(entry) && !candidateConditionSku2(entry))
+                {
+                    cart.Add(entry.Clone() as Cart.SkuCartEntry);
+                }
+            }
+
+            // Batch candidates in new cart
+            int batchesCount = Math.Min(candidatesSku1Count, candidatesSku2Count);
+            int residualsCount = Math.Max(candidatesSku1Count, candidatesSku2Count) - batchesCount;
+            Sku residualSku = candidatesSku1Count - candidatesSku2Count > 0 ? this.Sku1 : this.Sku2;
+            // Batch what we can
+            var cominedSku = new SkusCombinator().Combine(this.Sku1, this.Sku2);
+            for (int i = 0; i < batchesCount; i++)
+            {
+                // Do not add a single batch containing all batchable entries because we want to keep
+                // trackable the batching in the final cart description when printing
+                cart.Add(new Cart.SkuCartEntry()
+                {
+                    Sku = cominedSku,
+                    Price = this.TotalPrice,
+                    Quantity = 1,
+                    PromotionRuleId = RuleId,
+                    Description = $"Batching of {this.Sku1.Name} and {this.Sku2.Name} SKUs (1 each) for special price: {this.TotalPrice}"
+                });
+            }
+            // Add the remaining as non-batched
+            for (int i = 0; i < residualsCount; i++)
+            {
+                cart.Add(residualSku);
             }
 
             return cart;

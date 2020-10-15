@@ -38,7 +38,11 @@ namespace PromoEng.Engine
         /// <summary>
         /// Adds a rule to the pipeline structure.
         /// </summary>
-        /// <param name="rule"></param>
+        /// <param name="rule">The rule to add.</param>
+        /// <remarks>
+        /// The order through which the rules added are important
+        /// and can change the final <see cref="Cart"/> returned.
+        /// </remarks>
         public void AddRule(IPromotionRule rule)
         {
             if (rule == null)

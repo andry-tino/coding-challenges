@@ -86,7 +86,13 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         public object Clone()
         {
-            return new Cart();
+            var cart = new Cart();
+            foreach (var item in this.items)
+            {
+                cart.Add(item.Clone() as SkuCartEntry);
+            }
+
+            return cart;
         }
 
         /// <summary>
@@ -140,7 +146,7 @@ namespace PromoEng.Engine
         /// <summary>
         /// Represents an additional information added to an <see cref="Sku"/> in the cart.
         /// </summary>
-        public class SkuCartEntry
+        public class SkuCartEntry : ICloneable
         {
             /// <summary>
             /// Gets or sets the SKU associated to this entry.
@@ -155,6 +161,14 @@ namespace PromoEng.Engine
             /// <summary>
             /// Gets or sets the overall entry price.
             /// </summary>
+            /// <remarks>
+            /// This price will override <see cref="Sku.UnitPrice"/>.
+            /// When the <see cref="Cart"/> has an entry, this field will
+            /// show the actual price assigned to it. If this value is different
+            /// from <see cref="Sku.UnitPrice"/>, it means that a rule was applied
+            /// to change the price. This value is the one kept into account
+            /// when computing <see cref="Cart.Total"/>.
+            /// </remarks>
             public decimal Price { get; set; }
 
             /// <summary>
@@ -167,6 +181,19 @@ namespace PromoEng.Engine
             /// Gets or sets a description associated to this entry.
             /// </summary>
             public string Description { get; set; }
+
+            /// <inheritdoc/>
+            public object Clone()
+            {
+                return new SkuCartEntry()
+                {
+                    Sku = this.Sku, // Keep the reference to the SKU
+                    Quantity = this.Quantity,
+                    Price = this.Price,
+                    PromotionRuleId = this.PromotionRuleId,
+                    Description = this.Description
+                };
+            }
         }
 
         #endregion
