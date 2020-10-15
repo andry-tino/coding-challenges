@@ -55,7 +55,7 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void UnitPriceIsAPositiveQuantity()
         {
-            float price = -20;
+            decimal price = -20;
             var sku = new Sku("A", price);
             Assert.Equal(Math.Abs(price), sku.UnitPrice);
         }

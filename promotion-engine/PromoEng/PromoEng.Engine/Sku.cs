@@ -21,7 +21,7 @@ namespace PromoEng.Engine
         /// <summary>
         /// Gets the price of a single unit of the SKU.
         /// </summary>
-        public float UnitPrice { get; }
+        public decimal UnitPrice { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Sku"/> class.
@@ -29,7 +29,7 @@ namespace PromoEng.Engine
         /// <param name="id">The unique identifier of the SKU.</param>
         /// <param name="unitPrice">The price for a single unit of the SKU.</param>
         /// <param name="name">The friendly name of the SKU.</param>
-        public Sku(string id, float unitPrice, string name = null)
+        public Sku(string id, decimal unitPrice, string name = null)
         {
             this.Id = id ?? throw new ArgumentNullException(nameof(id));
             if (string.IsNullOrEmpty(id) || string.IsNullOrWhiteSpace(id))
