@@ -38,7 +38,9 @@ namespace PromoEng.Engine.Rules
         public CollectionOfSameSkuForRule(Sku sku, int quantity, decimal totalPrice)
         {
             this.Sku = sku ?? throw new ArgumentNullException(nameof(sku));
-            this.Quantity = Math.Abs(quantity);
+            this.Quantity = quantity != 0
+                ? Math.Abs(quantity)
+                : throw new ArgumentException(nameof(quantity), "Quantity cannot be zero");
             this.TotalPrice = Math.Abs(totalPrice);
         }
 

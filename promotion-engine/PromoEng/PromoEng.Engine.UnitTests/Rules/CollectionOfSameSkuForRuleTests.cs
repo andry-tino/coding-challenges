@@ -14,6 +14,39 @@ namespace PromoEng.Engine.UnitTests
     public class CollectionOfSameSkuForRuleTests
     {
         [Theory]
+        [InlineData(false, 50, 2)]
+        [InlineData(true, 50, 2)]
+        [InlineData(false, -50, 2)]
+        [InlineData(false, 50, -2)]
+        [InlineData(false, -50, -2)]
+        public void CreateRule(bool nullSku, decimal batchPrice, int batchQuantity)
+        {
+            Sku sku = nullSku ? null : new Sku("A", 100);
+            CollectionOfSameSkuForRule rule = null;
+            Action create = () =>
+            {
+                rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+            };
+
+            if (sku == null)
+            {
+                Assert.Throws<ArgumentNullException>(create);
+                return;
+            }
+
+            if (batchQuantity == 0)
+            {
+                Assert.Throws<ArgumentException>(create);
+                return;
+            }
+
+            create();
+            Assert.NotNull(rule.Sku);
+            Assert.True(rule.Quantity > 0);
+            Assert.True(rule.TotalPrice > 0);
+        }
+
+        [Theory]
         [InlineData(100, 50, 2, 4)]
         [InlineData(100, 50, 3, 9)]
         public void WhenRightAmountOfEntriesIsBatchableThenNoResidualsAreLeft(
@@ -123,6 +156,8 @@ namespace PromoEng.Engine.UnitTests
         [Theory]
         [InlineData(100, 50, 3, 2)] // With residuals
         [InlineData(100, 50, 4, 2)] // Without residuals
+        [InlineData(100, 0, 3, 2)] // With residuals
+        [InlineData(100, 0, 4, 2)] // Without residuals
         public void CorrectTotalPriceWhenBatching(
             decimal basePrice, decimal batchPrice, int batchQuantity, int itemsNumberToAdd)
         {
