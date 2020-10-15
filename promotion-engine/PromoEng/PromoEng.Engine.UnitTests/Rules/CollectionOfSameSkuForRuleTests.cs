@@ -2,9 +2,9 @@
 using System.Linq;
 
 using Xunit;
+using Xunit.Sdk;
 
 using PromoEng.Engine.Rules;
-using Xunit.Sdk;
 
 namespace PromoEng.Engine.UnitTests
 {
@@ -76,7 +76,7 @@ namespace PromoEng.Engine.UnitTests
                 Assert.Equal(1, entry.Quantity);
                 Assert.Equal(batchPrice, entry.Price);
             };
-            Assert.Collection(newCart, Enumerable.Repeat(batchChecker, batchQuantity).ToArray());
+            Assert.Collection(newCart, Enumerable.Repeat(batchChecker, batchesNumber).ToArray());
         }
 
         [Theory]

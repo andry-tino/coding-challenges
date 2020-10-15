@@ -5,7 +5,7 @@ using Xunit;
 
 using PromoEng.Engine.Rules;
 
-namespace PromoEng.Engine.UnitTests.Rules
+namespace PromoEng.Engine.UnitTests
 {
     /// <summary>
     /// Common unit tests for all <see cref="IPromotionRule"/>.
