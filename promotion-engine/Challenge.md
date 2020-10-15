@@ -26,7 +26,8 @@ Active Promotions:
 
 ```
 3 of A's for 130
-2 of B's for 45 C & D for 30
+2 of B's for 45
+C & D for 30
 ```
 
 **Scenario A**
