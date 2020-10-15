@@ -272,6 +272,8 @@ void Solver::process_words()
 
 	// Here we also build the alphabet
 	std::unordered_map<char, bool> alphabet_map;
+	// Keep track of added words to avoid duplicates
+	std::unordered_map<std::string, bool> use_words_map;
 
 	// For each word, include it in use_words only if:
 	// 1. The word has length matching either of the words in the anagram phrase
@@ -279,6 +281,14 @@ void Solver::process_words()
 	// 2. All its characters are all contained in the anagram phrase
 	for (wordset_t::const_iterator it = this->words->begin(); it != this->words->end(); it++)
 	{
+		if (use_words_map.find(*it) != use_words_map.end())
+		{
+			// Duplicate found => Discard it
+			continue;
+		}
+		use_words_map[*it] = true;
+
+		// Not a duplicate => Consider it
 		if (this->accept_word(*it))
 		{
 			this->use_words->push_back(*it);
@@ -290,6 +300,7 @@ void Solver::process_words()
 			}
 		}
 	}
+	use_words_map.clear(); // Not needed anymore
 
 	// Check the alphabet has not previously created, in which case delete
 	if (this->alphabet)
