@@ -3,6 +3,8 @@ using System.Linq;
 
 using Xunit;
 
+using PromoEng.Engine.Rules;
+
 namespace PromoEng.Engine.UnitTests.Rules
 {
     /// <summary>

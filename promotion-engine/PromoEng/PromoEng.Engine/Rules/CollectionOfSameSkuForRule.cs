@@ -80,9 +80,9 @@ namespace PromoEng.Engine.Rules
                 {
                     Sku = this.Sku,
                     Price = this.TotalPrice,
-                    Quantity = this.Quantity,
+                    Quantity = 1,
                     PromotionRuleId = RuleId,
-                    Description = $"Batching {this.Quantity} of {this.Sku.Name} for special price: {this.TotalPrice}"
+                    Description = $"Batch 1 x {this.Quantity} of {this.Sku.Name} for special price: {this.TotalPrice}"
                 });
             }
             // Add the remaining as non-batched

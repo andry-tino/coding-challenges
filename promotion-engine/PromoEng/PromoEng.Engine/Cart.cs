@@ -31,13 +31,19 @@ namespace PromoEng.Engine
         /// Adds one <see cref="Sku"/> to the cart.
         /// </summary>
         /// <param name="sku">The <see cref="Sku"/> to add.</param>
-        public void Add(Sku sku)
+        /// <param name="quantity">The number of items to add.</param>
+        public void Add(Sku sku, int quantity = 1)
         {
+            if (quantity <= 0)
+            {
+                throw new ArgumentException(nameof(quantity), "Quantity must be 1 or more");
+            }
+
             this.Add(new SkuCartEntry()
             {
                 Sku = sku,
-                Price = sku.UnitPrice,
-                Quantity = 1
+                Price = sku.UnitPrice * quantity,
+                Quantity = quantity
             });
         }
 

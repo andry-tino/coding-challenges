@@ -36,6 +36,17 @@ namespace PromoEng.Engine.UnitTests
         }
 
         [Fact]
+        public void WhenAddingASkuWithQuantityThenPriceIsUnitByQuantity()
+        {
+            var cart = new Cart();
+            decimal price = 100;
+            int quantity = 3;
+            cart.Add(new Sku("A", price), quantity);
+
+            Assert.Equal(price * quantity, cart.First().Price);
+        }
+
+        [Fact]
         public void TotalIsTheSumOfAllEntriesPrice()
         {
             decimal priceA = 100;
