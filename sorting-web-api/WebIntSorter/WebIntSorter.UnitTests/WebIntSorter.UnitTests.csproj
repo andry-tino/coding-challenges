@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyName>Maersk2020DotNet.WebIntSorter.UnitTests</AssemblyName>
+    <AssemblyName>WebIntSorter.UnitTests</AssemblyName>
 
     <RootNamespace>Challenge.WebIntSorter.UnitTests</RootNamespace>
   </PropertyGroup>

@@ -1,4 +1,4 @@
-# [Marsk 2020 Challenge](Challenge.md), ASP.NET Core App
+# [Challenge](Challenge.md), ASP.NET Core App
 October 2020.
 
 ## Requirements
@@ -37,7 +37,7 @@ To build the server using Visual Studio:
 To build the server using the commandline:
 
 1. Open a new shell window.
-2. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
+2. Navigate to `sorting-web-api/WebIntSorter/WebIntSorter`.
 3. Run command: `dotnet publish -c Release`.
 
 ## Running the server
@@ -58,7 +58,7 @@ If you chose to build the solution, after doing so, do the following:
 ### Running using `dotnet`
 If you want to use the commandline and you built the code using `dotnet`:
 
-1. Navigate to `maersk2020.dotnet/WebIntSorter/WebIntSorter`.
+1. Navigate to `sorting-web-api/WebIntSorter/WebIntSorter`.
 2. Run command: `dotnet run --configuration Release --launch-profile WebIntSorterProd`.
     - Use option `--launch-profile WebIntSorter` to get the `Development` environment and be able to use HTTP.
 
@@ -67,7 +67,7 @@ If you got the binaries, no build was required. Do the following:
 
 1. In the folder you got, open a new shell.
 2. Set environment variable `ASPNETCORE_ENVIRONMENT` to `"Production"`.
-3. Run: `dotnet .\Maersk2020DotNet.WebIntSorter.dll`.
+3. Run: `dotnet .\SortingWebApiDotNet.WebIntSorter.dll`.
 
 ---
 
