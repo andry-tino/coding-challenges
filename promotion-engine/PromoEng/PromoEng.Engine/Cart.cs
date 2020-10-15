@@ -68,6 +68,13 @@ namespace PromoEng.Engine
         /// </summary>
         /// <param name="other">The other cart to merge</param>
         /// <returns>A new <see cref="Cart"/> obtained by mergin this and the one provided.</returns>
+        /// <example>
+        /// Use the merge functionality to apply different levels of flexibility
+        /// in the handling of carts. There might be cases where certain rules (in a specific order) will
+        /// be applied only to a certain set of items. While, for another set, a different set of rules
+        /// should be considered. By doing so, it is effectively possible to apply different pipelines to
+        /// different portionas of the cart by having isolated carts that could be merged at the end.
+        /// </example>
         public Cart Merge(Cart other)
         {
             return Merge(this, other);
