@@ -9,7 +9,7 @@ namespace PromoEng.Engine.UnitTests
     /// <summary>
     /// Class containing utility methods for checking rules.
     /// </summary>
-    public static class RulesTestingUtilities
+    internal static class RulesTestingUtilities
     {
         /// <summary>
         /// Tests that an entry was processed by a rule.
