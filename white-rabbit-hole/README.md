@@ -4,8 +4,13 @@ October 2020.
 ## Requirements
 In order to build the project, you need:
 
-- CMake 3.8+
+- [CMake](https://cmake.org/runningcmake) 3.8+
 - Either Windows, MacOS or Linux.
+
+Before using, you need to compile the source files. You can either use the CMake GUI or Microsoft Visual Studio 2019 Community (C++ feature enabled).
+
+### Binaries
+You can download the binary (and skip building) in [Releases](https://github.com/andry-tino/coding-challenges/releases). Look for the lastest version of the program matching your architecture.
 
 ## Usage
 The program can be used to hack an anagram phrase by knowing the original sentence's MD5 hash and a set of words (vocabulary). The vocabulary file must be an ASCII file with words separated by a newline.
