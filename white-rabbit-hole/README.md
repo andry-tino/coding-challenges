@@ -16,13 +16,13 @@ Run the program by opening a shell and running the executable (on Windows):
 .\WhiteRabbitHole.exe
 ```
 
-When prompted, type in the following (in order) pressing `ENTER` each time:
+When prompted, type in the following (in order), pressing `ENTER` each time:
 
 1. The anagram phrase.
 2. The MD5 hash.
 3. The path to the vocabulary file.
 
-At each input, the program will confirm the value by printing it out before asking the next information.
+At each input, the program will confirm the value by printing it out before asking for the next information.
 
 After typing in all the information, the program will print some data:
 
@@ -59,7 +59,6 @@ Usewords loaded: 1659
 Alphabet: y i a l s n u r o t w p
 
 Starting algorithm...
-Alphabet: y i a l s n u r o t w p
 ```
 
 ### Termination
@@ -77,8 +76,8 @@ The naive approach is cracking the anagram by trying all permutations of the cha
 
 After an initial configuration stage, where the program selectes the set of words that will be used to crack the anagram (referred to as: `usewords`), two phases will be executed:
 
-1. **Combinations scanning**: All combinations of the usewords are considered. This number is $C = \frac{N!}{(N-m)!m!}$ where $m$ is the number of words in the phrase (deducible by the number of spaces in the anagram phrase). Each combination will be tested against a length and histogram check: the length of the sentence is checked and if it matches the anagram phrase's length then the histogram is checked. The histogram check evaluates that the number of characters in each combination matches the anagram phrase (anagramming a phrase leaves the histogram invariant). If the histogram check passes, that specific combination is added for later evaluation.
-2. **Dispositions scanning**: Every combination which passed from the previous phase, will be tested here. For each combination, every permutation will be scanned. This means that for each combination, the number of cases is $P = m!$. Every permutation is tested using the MD5 hashing.
+1. **Combinations scanning**: All combinations of the usewords are considered. This number is $C = \frac{N!}{(N-m)!m!}$ where $m$ is the number of words in the phrase (inferrable by the number of spaces in the anagram phrase). Each combination will be tested against a length and histogram check: the length of the sentence is checked and if it matches the anagram phrase's length then the histogram is checked. The histogram check evaluates that the number of characters in each combination matches the anagram phrase (anagramming a phrase leaves the histogram invariant). If the histogram check passes, that specific combination is added for later evaluation.
+2. **Dispositions scanning**: Every combination which passed the previous phase, will be tested here. For each combination phrase, every permutation of its words will be scanned. This means that for each combination, the number of cases to cosnider is $P = m!$. Every permutation is tested using the MD5 hashing.
 
 The total number of case evaluations is:
 
@@ -86,7 +85,7 @@ $$
 \Omega = C P = \frac{N!}{(N-m)!m!} m! = \frac{N!}{(N-m)!}
 $$
 
-This number matche the total number of dispositions of $N$ words taken in groups of $m$. This seems not to justify the 2-phase approach then, however the need for it is when considering performance. The second phase is the only phase where hashing is performed, instead of performing a full set of operations in the first phase.
+This number matches the total number of dispositions of $N$ words taken in groups of $m$. This seems not to justify the 2-phase approach!. However the need for it is when considering performance. The second phase is the only phase where hashing is performed, instead of performing a full set of operations in the first phase.
 
 ### Optimizations
-This is not the best possible algorithm. This is a good approach. The main drawback is the fact that the program will check every possible case and will not stop when a matching phrase is found. This was done because MD5 is not secure and has been evaluated as weak, therefore all cases are considered.
+This is not the best possible algorithm. This is a good approach but not an optimal one. The main drawback is the fact that the program will check every possible case and will not stop when a matching phrase is found. This was done because MD5 is not secure and has been evaluated as weak, therefore all cases are considered. More optimizations would also keep into consideration multithreading, given the nature of the problem that would be the first significant improvement given the absence of colliding resources involved.
