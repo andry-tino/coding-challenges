@@ -9,14 +9,14 @@ using PromoEng.Engine;
 namespace PromoEng.Engine.UnitTests
 {
     /// <summary>
-    /// Unit tests for <see cref="PromotionPipeline"/>.
+    /// Unit tests for <see cref="FaultTolerantPromotionPipeline"/>.
     /// </summary>
     public class PromotionPipelineTests
     {
         [Fact]
         public void WhenCartIsNullThenNullCartIsReturned()
         {
-            Assert.Null(new PromotionPipeline().Apply(null));
+            Assert.Null(new FaultTolerantPromotionPipeline().Apply(null));
         }
 
         [Fact]
@@ -36,9 +36,51 @@ namespace PromoEng.Engine.UnitTests
             Assert.True((object)pipeline.RunHistory[1] == (object)ruleB);
         }
 
+        [Fact]
+        public void WhenApplicatkionWithNoErrorsThenExceptionsListIsEmpty()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenApplicatkionWithErrorsThenExceptionsListIsNotEmpty()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenApplicatkionWithErrorThenExceptionsListReportsFaultyRule()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenApplicatkionWithErrorsThenExceptionsListReportsFaultyRules()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenApplicatkionWithErrorThenPipelineMovesToNextRule()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenApplicatkionWithErrorsThenPipelineMovesToNextRule()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void WhenAllRulesFailThenReturnedCartIsTheSameAsOriginal()
+        {
+            Assert.True(false);
+        }
+
         #region Types
 
-        private class TestPromotionPipeline : PromotionPipeline
+        private class TestPromotionPipeline : FaultTolerantPromotionPipeline
         {
             public IList<IPromotionRule> RunHistory { get; private set; }
 

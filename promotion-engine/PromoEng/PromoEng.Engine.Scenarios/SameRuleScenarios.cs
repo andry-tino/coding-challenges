@@ -25,7 +25,7 @@ namespace PromoEng.Engine.Scenarios
             cart.Add(skuB, 3);
             cart.TestTotal(2*100 + 3*200);
 
-            var pipeline = new PromotionPipeline();
+            var pipeline = new FaultTolerantPromotionPipeline();
             pipeline.AddRule(new CollectionOfSameSkuForRule(testContext.CartFactory, skuA, 2, 50));
             pipeline.AddRule(new CollectionOfSameSkuForRule(testContext.CartFactory, skuB, 2, 100));
             var newCart = pipeline.Apply(cart);
