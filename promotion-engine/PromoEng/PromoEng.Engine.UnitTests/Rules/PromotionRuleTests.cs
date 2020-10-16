@@ -25,5 +25,12 @@ namespace PromoEng.Engine.UnitTests
         {
 
         }
+
+        [Theory]
+        [InlineData(null)]
+        public void RulesApplicationBringsTheTotalPriceDown(IPromotionRule rule)
+        {
+
+        }
     }
 }
