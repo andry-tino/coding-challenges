@@ -101,6 +101,12 @@ void Solver::solve()
 
 	unsigned int words_count = this->get_phrase_words_count();
 
+	// When true, this will use a 2-phase approach:
+	// 1. Evaluate combinations of words (not dispositions). In this phase, the words
+	//    are checked and the histograms as well.
+	// 2. Evaluate all dispositions of the found combinations and check hash.
+	//    This is an exhaustive approach on a very small set of words as we scan
+	//    dispositions of single combinations.
 	bool use_combinations = true;
 
 	// Take combinations of use_words in groups of words_count, so
@@ -275,10 +281,8 @@ void Solver::process_words()
 	// Keep track of added words to avoid duplicates
 	std::unordered_map<std::string, bool> use_words_map;
 
-	// For each word, include it in use_words only if:
-	// 1. The word has length matching either of the words in the anagram phrase
-	//        - The anagram phrase shows the exact number of words in the original
-	// 2. All its characters are all contained in the anagram phrase
+	// For each word, include it in use_words only if all its characters
+	// are contained in the anagram phrase
 	for (wordset_t::const_iterator it = this->words->begin(); it != this->words->end(); it++)
 	{
 		if (use_words_map.find(*it) != use_words_map.end())
@@ -334,6 +338,7 @@ std::vector<std::string> Solver::get_words_in_phrase(const std::string& phrase) 
 
 bool Solver::accept_word(const std::string& word) const
 {
+	// Check that every character in the word is present in the anagram phrase
 	for (std::string::const_iterator it = word.begin(); it != word.end(); it++)
 	{
 		if (this->anagram_phrase.find(*it) == std::string::npos)
@@ -343,8 +348,7 @@ bool Solver::accept_word(const std::string& word) const
 		}
 	}
 
-	//return true; // TODO: Remove
-
+	// If the character check passes, then consider the histogram
 	return *(this->anagram_phrase_histo) >= Histogram(word);
 }
 

@@ -1,4 +1,5 @@
 // MD5.h
+// Note: implementation by Frank Thilo.
 
 #ifndef MD5_H_
 #define MD5_H_
@@ -7,7 +8,7 @@
 #include <iostream>
 
 
-// a small class for calculating MD5 hashes of strings or byte arrays
+// A small class for calculating MD5 hashes of strings or byte arrays
 // it is not meant to be fast or secure
 //
 // usage: 1) feed it blocks of uchars with update()
