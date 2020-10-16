@@ -374,7 +374,7 @@ void Solver::walk_dispositions(
 		DispositionRunResult run_result = DispositionRunResult::Skipped;
 		// Ordered disposition processing allows us to evaluate only combinations of words. It is the
 		// same concepts as caching, but caching will be really memory-intensive
-		if (!walkCombinationsOnly || (walkCombinationsOnly && !state->is_disposition_ordered()))
+		if (!walkCombinationsOnly || (walkCombinationsOnly && state->is_disposition_ordered()))
 		{
 			run_result = this->run_disposition(usewordset, group_size, state, result, !walkCombinationsOnly);
 		}
@@ -579,8 +579,7 @@ bool DispositionsTreeWalkState::is_disposition_ordered(const disposition_t& disp
 	// Guaranteed at least two elements from here on
 	for (disposition_t::const_iterator it = disposition.begin()+1; it != disposition.end(); it++)
 	{
-		// In a vector, push_front is used, so if we want asc order, we need to reverse
-		if (!(*it < *(it - 1)))
+		if (!(*it > *(it - 1)))
 		{
 			return false;
 		}
