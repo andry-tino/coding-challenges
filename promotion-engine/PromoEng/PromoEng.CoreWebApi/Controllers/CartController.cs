@@ -10,6 +10,9 @@ using PromoEng.Engine;
 
 namespace PromoEng.CoreWebApi.Controllers
 {
+    /// <summary>
+    /// Controller responsible for handling requests to cart handling.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class CartController : ControllerBase

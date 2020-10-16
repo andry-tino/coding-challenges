@@ -46,6 +46,9 @@ namespace PromoEng.CoreWebApi
             var cartsInMemoryCollection = new CartsCollection();
             services.AddSingleton<IInMemoryCollection<CartInfo>>(cartsInMemoryCollection);
 
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen();
+
             services.AddControllers();
         }
 
@@ -62,6 +65,15 @@ namespace PromoEng.CoreWebApi
             }
 
             app.UseHttpsRedirection();
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+            // Enable middleware to serve swagger-ui
+            app.UseSwaggerUI(c =>
+            {
+                // Use the Swagger JSON endpoint
+                c.SwaggerEndpoint(Constants.Routing.SwaggerUrl, "API V1");
+            });
 
             app.UseRouting();
 
