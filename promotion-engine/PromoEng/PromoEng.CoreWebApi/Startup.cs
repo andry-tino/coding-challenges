@@ -13,22 +13,47 @@ using Microsoft.Extensions.Logging;
 
 namespace PromoEng.CoreWebApi
 {
+    /// <summary>
+    /// Web core app startup class defining dependencies and configuring middlewares.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration to use.</param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Gets the configuration being used.
+        /// </summary>
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// This method gets called by the runtime. Adds services to the container.
+        /// </summary>
+        /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add configuration for the promotion engine
+            services.Configure<PromotionEngineOptions>(
+                this.Configuration.GetSection(PromotionEngineOptions.Position));
+
+            // Add dependency on the in-memory collection of carts
+            var cartsInMemoryCollection = new CartsCollection();
+            services.AddSingleton<IInMemoryCollection<CartInfo>>(cartsInMemoryCollection);
+
             services.AddControllers();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// This method gets called by the runtime. Configures the HTTP request pipeline.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
