@@ -10,6 +10,9 @@ namespace PromoEng.Engine
     {
         private IList<IPromotionRule> rules;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PromotionPipeline"/> class.
+        /// </summary>
         public PromotionPipeline()
         {
             this.rules = new List<IPromotionRule>();
@@ -40,8 +43,8 @@ namespace PromoEng.Engine
         /// </summary>
         /// <param name="rule">The rule to add.</param>
         /// <remarks>
-        /// The order through which the rules added are important
-        /// and can change the final <see cref="StandardCart"/> returned.
+        /// The order through which the rules are added is important
+        /// and can change the final total price.
         /// </remarks>
         public void AddRule(IPromotionRule rule)
         {
