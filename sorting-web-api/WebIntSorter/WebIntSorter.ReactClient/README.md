@@ -9,7 +9,7 @@ To be able to run this web application, you need the following:
 - A browser (latest version) among: Chrome, Edge, Firefox.
 
 ## Get
-To get the client, you either [clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git), or get the latest _Maersk 2020 WebIntSorter ReactClient_ release from [releases](https://github.com/andry-tino/coding-challenges/releases).
+To get the client, you either [clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git), or get the latest _WebIntSorter ReactClient_ release from [releases](https://github.com/andry-tino/coding-challenges/releases).
 
 ## Run
 After getting the code, in the project directory, run:

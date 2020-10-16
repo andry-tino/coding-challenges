@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Maersk2020DotNet.WebIntSorter</AssemblyName>
+    <AssemblyName>WebIntSorter</AssemblyName>
     <RootNamespace>Challenge.WebIntSorter</RootNamespace>
   </PropertyGroup>
 
