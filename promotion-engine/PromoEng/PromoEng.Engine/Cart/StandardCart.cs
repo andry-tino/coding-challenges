@@ -6,8 +6,13 @@ using System.Linq;
 namespace PromoEng.Engine
 {
     /// <summary>
-    /// Represents a cart: a structure able to hold information about SKUs which are being purchased.
+    /// Represents a cart: a structure able to hold information
+    /// about SKUs which are being purchased.
     /// </summary>
+    /// <remarks>
+    /// This implementation of <see cref="ICart"/> requires a price list to be provided
+    /// for associating <see cref="Sku"/> with unit prices.
+    /// </remarks>
     public class StandardCart : ICart
     {
         private readonly IDictionary<Sku, decimal> priceList;

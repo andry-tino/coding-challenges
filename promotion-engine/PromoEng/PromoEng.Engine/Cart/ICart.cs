@@ -11,6 +11,10 @@ namespace PromoEng.Engine
         /// <summary>
         /// Gets the total number of SKUs in the cart.
         /// </summary>
+        /// <remarks>
+        /// As a design choice, the interface does not capture any behavior related to pricing of <see cref="Sku"/>.
+        /// Each single specific implementation will deal with this in its own way.
+        /// </remarks>
         int Count { get; }
 
         /// <summary>

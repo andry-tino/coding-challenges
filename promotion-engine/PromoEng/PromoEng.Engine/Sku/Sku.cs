@@ -6,6 +6,10 @@ namespace PromoEng.Engine
     /// <summary>
     /// Represents a Stock Keeping Unit.
     /// </summary>
+    /// <remarks>
+    /// SKUs do not keep track of prices, that happens at a different level
+    /// in order to separate pricing from item identification.
+    /// </remarks>
     public class Sku : IComparable<Sku>
     {
         /// <summary>
