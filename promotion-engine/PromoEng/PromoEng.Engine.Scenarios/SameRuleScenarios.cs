@@ -3,6 +3,7 @@ using System;
 using Xunit;
 
 using PromoEng.Engine.Rules;
+using PromoEng.Testability;
 
 namespace PromoEng.Engine.Scenarios
 {
@@ -14,32 +15,22 @@ namespace PromoEng.Engine.Scenarios
         [Fact]
         public void CollectionOfSameSkuForRule_Two()
         {
-            var skuA = new Sku("A", 100);
-            var skuB = new Sku("B", 200);
+            var testContext = new TestContext();
 
-            var cart = new StandardCart();
+            var skuA = testContext.CreateNewSku("A", 100);
+            var skuB = testContext.CreateNewSku("B", 200);
+
+            var cart = testContext.CartFactory.Create();
             cart.Add(skuA, 2);
             cart.Add(skuB, 3);
             cart.TestTotal(2*100 + 3*200);
 
             var pipeline = new PromotionPipeline();
-            pipeline.AddRule(new CollectionOfSameSkuForRule(new TestCartFactory(), skuA, 2, 50));
-            pipeline.AddRule(new CollectionOfSameSkuForRule(new TestCartFactory(), skuB, 2, 100));
+            pipeline.AddRule(new CollectionOfSameSkuForRule(testContext.CartFactory, skuA, 2, 50));
+            pipeline.AddRule(new CollectionOfSameSkuForRule(testContext.CartFactory, skuB, 2, 100));
             var newCart = pipeline.Apply(cart);
 
             newCart.TestTotal(1*50 + 1*100 + 200);
         }
-
-        #region Types
-
-        private class TestCartFactory : ICartFactory
-        {
-            public ICart Create()
-            {
-                return new StandardCart();
-            }
-        }
-
-        #endregion
     }
 }

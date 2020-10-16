@@ -14,7 +14,7 @@ namespace PromoEng.Engine.UnitTests
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                var sku = new Sku("", 0);
+                var sku = new Sku("");
             });
         }
 
@@ -23,7 +23,7 @@ namespace PromoEng.Engine.UnitTests
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                var sku = new Sku(" ", 0);
+                var sku = new Sku(" ");
             });
         }
 
@@ -32,7 +32,7 @@ namespace PromoEng.Engine.UnitTests
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                var sku = new Sku("  ", 0);
+                var sku = new Sku("  ");
             });
         }
 
@@ -41,23 +41,15 @@ namespace PromoEng.Engine.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var sku = new Sku(null, 0);
+                var sku = new Sku(null);
             });
         }
 
         [Fact]
         public void WhenNoFriendlyNameIsProvidedThenIdIsUsed()
         {
-            var sku = new Sku("A", 0);
+            var sku = new Sku("A");
             Assert.Equal(sku.Id, sku.Name);
-        }
-
-        [Fact]
-        public void UnitPriceIsAPositiveQuantity()
-        {
-            decimal price = -20;
-            var sku = new Sku("A", price);
-            Assert.Equal(Math.Abs(price), sku.UnitPrice);
         }
     }
 }

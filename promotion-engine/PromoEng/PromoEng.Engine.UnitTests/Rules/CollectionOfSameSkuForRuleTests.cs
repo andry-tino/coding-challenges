@@ -5,6 +5,7 @@ using Xunit;
 using Xunit.Sdk;
 
 using PromoEng.Engine.Rules;
+using PromoEng.Testability;
 
 namespace PromoEng.Engine.UnitTests
 {
@@ -21,11 +22,13 @@ namespace PromoEng.Engine.UnitTests
         [InlineData(false, -50, -2)]
         public void CreateRule(bool nullSku, decimal batchPrice, int batchQuantity)
         {
-            Sku sku = nullSku ? null : new Sku("A", 100);
+            var testContext = new TestContext();
+
+            Sku sku = nullSku ? null : testContext.CreateNewSku("A", 100);
             CollectionOfSameSkuForRule rule = null;
             Action create = () =>
             {
-                rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
+                rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             };
 
             if (sku == null)
@@ -52,6 +55,8 @@ namespace PromoEng.Engine.UnitTests
         public void WhenRightAmountOfEntriesIsBatchableThenNoResidualsAreLeft(
             decimal basePrice, decimal batchPrice, int batchQuantity, int itemsNumberToAdd)
         {
+            var testContext = new TestContext();
+
             if (itemsNumberToAdd % batchQuantity != 0)
             {
                 throw new TestClassException("Invalid configuration");
@@ -59,14 +64,14 @@ namespace PromoEng.Engine.UnitTests
 
             int batchesNumber = itemsNumberToAdd / batchQuantity;
 
-            var sku = new Sku("A", basePrice);
+            var sku = testContext.CreateNewSku("A", basePrice);
 
-            var cart = new StandardCart();
+            var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber, newCart.Count);
 
@@ -85,6 +90,8 @@ namespace PromoEng.Engine.UnitTests
         public void WhenNonRightAmountOfEntriesIsBatchableThenSomeResidualsAreLeft(
             decimal basePrice, decimal batchPrice, int batchQuantity, int itemsNumberToAdd)
         {
+            var testContext = new TestContext();
+
             int residualsNumber = itemsNumberToAdd % batchQuantity;
             if (residualsNumber == 0)
             {
@@ -93,14 +100,14 @@ namespace PromoEng.Engine.UnitTests
 
             int batchesNumber = itemsNumberToAdd / batchQuantity;
 
-            var sku = new Sku("A", basePrice);
+            var sku = testContext.CreateNewSku("A", basePrice);
 
-            var cart = new StandardCart();
+            var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber + residualsNumber, newCart.Count);
 
@@ -128,19 +135,21 @@ namespace PromoEng.Engine.UnitTests
         public void WhenNonSufficientAmountOfEntriesIsBatchableThenNoBatchesAreCreated(
             decimal basePrice, decimal batchPrice, int batchQuantity, int itemsNumberToAdd)
         {
+            var testContext = new TestContext();
+
             if (itemsNumberToAdd >= batchQuantity)
             {
                 throw new TestClassException("Invalid configuration");
             }
 
-            var sku = new Sku("A", basePrice);
+            var sku = testContext.CreateNewSku("A", basePrice);
 
-            var cart = new StandardCart();
+            var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(itemsNumberToAdd, newCart.Count);
 
@@ -161,30 +170,20 @@ namespace PromoEng.Engine.UnitTests
         public void CorrectTotalPriceWhenBatching(
             decimal basePrice, decimal batchPrice, int batchQuantity, int itemsNumberToAdd)
         {
+            var testContext = new TestContext();
+
             int residualsNumber = itemsNumberToAdd % batchQuantity;
             int batchesNumber = itemsNumberToAdd / batchQuantity;
 
-            var sku = new Sku("A", basePrice);
+            var sku = testContext.CreateNewSku("A", basePrice);
 
-            var cart = new StandardCart();
+            var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(basePrice * itemsNumberToAdd, cart.Total);
 
-            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(basePrice * residualsNumber + batchPrice * batchesNumber, newCart.Total);
         }
-
-        #region Types
-
-        private class TestCartFactory : ICartFactory
-        {
-            public ICart Create()
-            {
-                return new StandardCart();
-            }
-        }
-
-        #endregion
     }
 }

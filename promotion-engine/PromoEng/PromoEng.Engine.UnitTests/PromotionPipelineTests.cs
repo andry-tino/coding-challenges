@@ -28,7 +28,7 @@ namespace PromoEng.Engine.UnitTests
             pipeline.AddRule(ruleA);
             pipeline.AddRule(ruleB);
 
-            pipeline.Apply(new StandardCart());
+            pipeline.Apply(new StandardCart(new Dictionary<Sku, decimal>()));
 
             Assert.True(pipeline.RunHistory.Any());
             Assert.Equal(2, pipeline.RunHistory.Count);

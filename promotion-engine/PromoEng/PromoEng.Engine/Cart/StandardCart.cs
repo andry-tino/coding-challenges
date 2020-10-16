@@ -10,14 +10,16 @@ namespace PromoEng.Engine
     /// </summary>
     public class StandardCart : ICart
     {
+        private readonly IDictionary<Sku, decimal> priceList;
         private ICollection<SkuCartEntry> items;
         private decimal? total;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StandardCart"/> class.
         /// </summary>
-        public StandardCart()
+        public StandardCart(IDictionary<Sku, decimal> priceList)
         {
+            this.priceList = priceList ?? throw new ArgumentNullException(nameof(priceList));
             this.items = new List<SkuCartEntry>();
             this.total = null;
         }
@@ -36,7 +38,7 @@ namespace PromoEng.Engine
             this.Add(new SkuCartEntry()
             {
                 Sku = sku,
-                Price = sku.UnitPrice * quantity,
+                Price = this.RetrieveUnitPriceForSku(sku) * quantity,
                 Quantity = quantity
             });
         }
@@ -57,7 +59,7 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         public ICart Merge(ICart other)
         {
-            return Merge(this, other);
+            return Merge(this, other, this.priceList);
         }
 
         /// <inheritdoc/>
@@ -79,7 +81,7 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         public object Clone()
         {
-            var cart = new StandardCart();
+            var cart = new StandardCart(this.priceList);
             foreach (var item in this.items)
             {
                 cart.Add(item.Clone() as SkuCartEntry);
@@ -102,6 +104,16 @@ namespace PromoEng.Engine
             }
         }
 
+        private decimal RetrieveUnitPriceForSku(Sku sku)
+        {
+            if (this.priceList.TryGetValue(sku, out decimal unitPrice))
+            {
+                return unitPrice;
+            }
+
+            throw new SkuNotFoundInPriceListException(sku);
+        }
+
         private void ComputeTotal()
         {
             decimal total = 0;
@@ -115,9 +127,9 @@ namespace PromoEng.Engine
 
         private void ResetTotal() => this.total = null;
 
-        private static ICart Merge(ICart cart1, ICart cart2)
+        private static ICart Merge(ICart cart1, ICart cart2, IDictionary<Sku, decimal> priceList)
         {
-            ICart mergeCart = new StandardCart();
+            ICart mergeCart = new StandardCart(priceList);
             Action<ICart, ICart> merger = (ICart src, ICart dst) =>
             {
                 foreach (var entry in src)
@@ -131,5 +143,25 @@ namespace PromoEng.Engine
 
             return mergeCart;
         }
+
+        #region
+
+        /// <summary>
+        /// An exception thrown when an <see cref="Sku"/> in the cart was
+        /// not found in the pricelist when trying to retrieve its unit price.
+        /// </summary>
+        public class SkuNotFoundInPriceListException : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SkuNotFoundInPriceListException"/> class.
+            /// </summary>
+            /// <param name="sku">The <see cref="Sku"/> which could not be found in the pricelist.</param>
+            public SkuNotFoundInPriceListException(Sku sku)
+                : base($"Sku {sku.ToString()} could not be found in pricelist, no price available")
+            {
+            }
+        }
+
+        #endregion
     }
 }

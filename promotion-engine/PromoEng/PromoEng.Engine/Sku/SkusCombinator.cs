@@ -38,7 +38,6 @@ namespace PromoEng.Engine
 
             return new Sku(
                 skus.Select(sku => sku.Id).Aggregate((id1, id2) => $"{id1}&{id2}"),
-                skus.Sum(sku => sku.UnitPrice),
                 skus.Select(sku => sku.Name).Aggregate((name1, name2) => $"{name1} + {name2}"));
         }
     }

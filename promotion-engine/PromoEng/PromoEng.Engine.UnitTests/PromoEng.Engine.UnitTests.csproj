@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PromoEng.Engine\PromoEng.Engine.csproj" />
+    <ProjectReference Include="..\Testability\PromoEng.Testability.csproj" />
   </ItemGroup>
 
 </Project>
