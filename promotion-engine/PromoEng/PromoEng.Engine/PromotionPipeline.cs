@@ -16,10 +16,10 @@ namespace PromoEng.Engine
         }
 
         /// <summary>
-        /// Applies the pipeline to a <see cref="Cart"/>.
+        /// Applies the pipeline to a <see cref="ICart"/>.
         /// </summary>
         /// <param name="cart">The cart to which the pipeline should be applied to.</param>
-        public Cart Apply(Cart cart)
+        public ICart Apply(ICart cart)
         {
             if (cart == null)
             {
@@ -41,7 +41,7 @@ namespace PromoEng.Engine
         /// <param name="rule">The rule to add.</param>
         /// <remarks>
         /// The order through which the rules added are important
-        /// and can change the final <see cref="Cart"/> returned.
+        /// and can change the final <see cref="StandardCart"/> returned.
         /// </remarks>
         public void AddRule(IPromotionRule rule)
         {
@@ -53,7 +53,7 @@ namespace PromoEng.Engine
             this.rules.Add(rule);
         }
 
-        protected virtual Cart RunRule(IPromotionRule rule, Cart cart)
+        protected virtual ICart RunRule(IPromotionRule rule, ICart cart)
         {
             return rule.Evaluate(cart);
         }

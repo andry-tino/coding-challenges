@@ -8,6 +8,8 @@ namespace PromoEng.Engine.Rules
     /// </summary>
     public class CollectionOfSameSkuForRule : IPromotionRule
     {
+        private readonly ICartFactory cartFactory;
+
         /// <summary>
         /// Gets the unique identifier of this rule.
         /// </summary>
@@ -32,11 +34,13 @@ namespace PromoEng.Engine.Rules
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionOfSameSkuForRule"/> class.
         /// </summary>
+        /// <param name="cartFactory">The <see cref="ICartFactory"/> to use to generate a cart.</param>
         /// <param name="sku">The <see cref="PromoEng.Engine.Sku"/>.</param>
         /// <param name="quantity">The quantity of the same amount of items of the <see cref="PromoEng.Engine.Sku"/>.</param>
         /// <param name="totalPrice">The overall price to assign to the batch.</param>
-        public CollectionOfSameSkuForRule(Sku sku, int quantity, decimal totalPrice)
+        public CollectionOfSameSkuForRule(ICartFactory cartFactory, Sku sku, int quantity, decimal totalPrice)
         {
+            this.cartFactory = cartFactory ?? throw new ArgumentNullException(nameof(cartFactory));
             this.Sku = sku ?? throw new ArgumentNullException(nameof(sku));
             this.Quantity = quantity != 0
                 ? Math.Abs(quantity)
@@ -45,15 +49,15 @@ namespace PromoEng.Engine.Rules
         }
 
         /// <inheritdoc/>
-        public Cart Evaluate(Cart originalCart)
+        public ICart Evaluate(ICart originalCart)
         {
             if (originalCart == null)
             {
                 return null;
             }
 
-            var cart = new Cart();
-            Func<Cart.SkuCartEntry, bool> candidateCondition =
+            var cart = this.cartFactory.Create();
+            Func<SkuCartEntry, bool> candidateCondition =
                 (entry) => entry.Sku.CompareTo(this.Sku) == 0 && entry.PromotionRuleId == null;
             
             // Get all candidate entries that can be batched
@@ -66,7 +70,7 @@ namespace PromoEng.Engine.Rules
             {
                 if (!candidateCondition(entry))
                 {
-                    cart.Add(entry.Clone() as Cart.SkuCartEntry);
+                    cart.Add(entry.Clone() as SkuCartEntry);
                 }
             }
 
@@ -78,7 +82,7 @@ namespace PromoEng.Engine.Rules
             {
                 // Do not add a single batch containing all batchable entries because we want to keep
                 // trackable the batching in the final cart description when printing
-                cart.Add(new Cart.SkuCartEntry()
+                cart.Add(new SkuCartEntry()
                 {
                     Sku = this.Sku,
                     Price = this.TotalPrice,

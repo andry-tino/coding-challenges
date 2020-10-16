@@ -26,7 +26,7 @@ namespace PromoEng.Engine.UnitTests
             PairOfDifferentSkusForRule rule = null;
             Action create = () =>
             {
-                rule = new PairOfDifferentSkusForRule(sku1, sku2, batchPrice);
+                rule = new PairOfDifferentSkusForRule(new TestCartFactory(), sku1, sku2, batchPrice);
             };
 
             if (sku1 == null || sku2 == null)
@@ -59,17 +59,17 @@ namespace PromoEng.Engine.UnitTests
             var sku1 = new Sku("A", basePrice1);
             var sku2 = new Sku("B", basePrice2);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
             Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
             Assert.Equal(2, cart.Count());
 
-            var rule = new PairOfDifferentSkusForRule(sku1, sku2, batchPrice);
+            var rule = new PairOfDifferentSkusForRule(new TestCartFactory(), sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber, newCart.Count);
 
-            Action<Cart.SkuCartEntry> batchChecker = entry =>
+            Action<SkuCartEntry> batchChecker = entry =>
             {
                 entry.CheckCartEntryWasProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -97,23 +97,23 @@ namespace PromoEng.Engine.UnitTests
             var sku1 = new Sku("A", basePrice1);
             var sku2 = new Sku("B", basePrice2);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
             Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
             Assert.Equal(2, cart.Count());
 
-            var rule = new PairOfDifferentSkusForRule(sku1, sku2, batchPrice);
+            var rule = new PairOfDifferentSkusForRule(new TestCartFactory(), sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber + residualsNumber, newCart.Count);
 
-            Action<Cart.SkuCartEntry> batchChecker = entry =>
+            Action<SkuCartEntry> batchChecker = entry =>
             {
                 entry.CheckCartEntryWasProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
                 Assert.Equal(batchPrice, entry.Price);
             };
-            Action<Cart.SkuCartEntry> residualChecker = entry =>
+            Action<SkuCartEntry> residualChecker = entry =>
             {
                 entry.CheckCartEntryWasNotProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -141,7 +141,7 @@ namespace PromoEng.Engine.UnitTests
             var sku1 = new Sku("A", basePrice1);
             var sku2 = new Sku("B", basePrice2);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             if (itemsNumberToAdd1 > 0)
             {
                 cart.Add(sku1, itemsNumberToAdd1);
@@ -153,11 +153,11 @@ namespace PromoEng.Engine.UnitTests
             Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
             Assert.Single(cart);
 
-            var rule = new PairOfDifferentSkusForRule(sku1, sku2, batchPrice);
+            var rule = new PairOfDifferentSkusForRule(new TestCartFactory(), sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, newCart.Count);
 
-            Action<Cart.SkuCartEntry> residualChecker = entry =>
+            Action<SkuCartEntry> residualChecker = entry =>
             {
                 entry.CheckCartEntryWasNotProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -185,13 +185,13 @@ namespace PromoEng.Engine.UnitTests
             var sku1 = new Sku("A", basePrice1);
             var sku2 = new Sku("B", basePrice2);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
             Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
             Assert.Equal(2, cart.Count());
 
-            var rule = new PairOfDifferentSkusForRule(sku1, sku2, batchPrice);
+            var rule = new PairOfDifferentSkusForRule(new TestCartFactory(), sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(
                 basePrice1 * residualsNumber * (residualsAreOfSku1 ? 1 : 0) +
@@ -199,5 +199,17 @@ namespace PromoEng.Engine.UnitTests
                 batchPrice * batchesNumber, 
                 newCart.Total);
         }
+
+        #region Types
+
+        private class TestCartFactory : ICartFactory
+        {
+            public ICart Create()
+            {
+                return new StandardCart();
+            }
+        }
+
+        #endregion
     }
 }

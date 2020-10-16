@@ -5,7 +5,7 @@ namespace PromoEng.Engine
 {
     /// <summary>
     /// Rules might be in need of replacing a group of entries in the
-    /// <see cref="Cart"/> with one entry which represents a batch
+    /// <see cref="ICart"/> with one entry which represents a batch
     /// discount or similar. Use this class to generate the batching
     /// <see cref="Sku"/>.
     /// </summary>

@@ -21,7 +21,7 @@ namespace PromoEng.Engine
         /// <summary>
         /// Gets the price of a single unit of the SKU.
         /// </summary>
-        public decimal UnitPrice { get; }
+        public decimal UnitPrice { get; } // TODO: Separate
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Sku"/> class.

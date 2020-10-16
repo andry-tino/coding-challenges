@@ -18,14 +18,14 @@ namespace PromoEng.CoreWebApi.Controllers
     public class CartController : ControllerBase
     {
         private readonly ILogger<CartController> logger;
-        private readonly IInMemoryCollection<CartInfo> dataSource;
+        private readonly IInMemoryCollection<CartsCollection.CartsCollectionEntry> dataSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CartController"/> class.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="dataSource">The database to use.</param>
-        public CartController(ILogger<CartController> logger, IInMemoryCollection<CartInfo> dataSource)
+        public CartController(ILogger<CartController> logger, IInMemoryCollection<CartsCollection.CartsCollectionEntry> dataSource)
         {
             this.logger = logger;
             this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
@@ -41,9 +41,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// to be inspected, single calls are to be made targeting each one of them.
         /// </remarks>
         [HttpGet()]
-        public IEnumerable<CartInfo> GetAll()
+        public CartOperationInfo<CartInfo> GetAll()
         {
-            return new CartInfo[0];
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
 
         /// <summary>
@@ -52,9 +55,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// <param name="id">The id of the cart to use.</param>
         /// <returns>The content of the cart.</returns>
         [HttpGet("{id}")]
-        public CartContent GetCart(string id)
+        public CartOperationInfo<CartInfo> GetCart(string id)
         {
-            return new CartContent();
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
 
         /// <summary>
@@ -62,9 +68,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// </summary>
         /// <returns>The info of the newly created cart.</returns>
         [HttpPost]
-        public CartInfo Create()
+        public CartOperationInfo<CartInfo> Create()
         {
-            return new CartInfo();
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
 
         /// <summary>
@@ -73,9 +82,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// <param name="id">The id of the cart to use.</param>
         /// <returns>The info of the cart that was checked out.</returns>
         [HttpPost("{id}")]
-        public CartInfo Checkout(string id)
+        public CartOperationInfo<CartInfo> Checkout(string id)
         {
-            return new CartInfo();
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
 
         /// <summary>
@@ -84,9 +96,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// <param name="id">The id of the cart to use.</param>
         /// <returns>An object describing the operation outcome.</returns>
         [HttpPut("{id}")]
-        public CartOperationInfo Add(string id)
+        public CartOperationInfo<CartInfo> Add(string id)
         {
-            return new CartOperationInfo();
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
 
         /// <summary>
@@ -98,9 +113,12 @@ namespace PromoEng.CoreWebApi.Controllers
         /// A checked-out cart cannot be deleted, it must stay in the books.
         /// </remarks>
         [HttpDelete("{id}")]
-        public CartInfo Delete(string id)
+        public CartOperationInfo<CartInfo> Delete(string id)
         {
-            return new CartInfo();
+            return new CartOperationInfo<CartInfo>(CartOperationType.Read, CartOperationStatus.Successful)
+            {
+                Body = new CartInfo()
+            };
         }
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using Xunit;
 
@@ -15,7 +13,7 @@ namespace PromoEng.Engine.UnitTests
         /// Tests that an entry was processed by a rule.
         /// </summary>
         /// <param name="entry">The entry to test.</param>
-        public static void CheckCartEntryWasProcessedByRule(this Cart.SkuCartEntry entry)
+        public static void CheckCartEntryWasProcessedByRule(this SkuCartEntry entry)
         {
             Assert.NotNull(entry.PromotionRuleId);
             Assert.NotNull(entry.Description);
@@ -25,7 +23,7 @@ namespace PromoEng.Engine.UnitTests
         /// Tests that an entry was not processed by a rule.
         /// </summary>
         /// <param name="entry">The entry to test.</param>
-        public static void CheckCartEntryWasNotProcessedByRule(this Cart.SkuCartEntry entry)
+        public static void CheckCartEntryWasNotProcessedByRule(this SkuCartEntry entry)
         {
             Assert.Null(entry.PromotionRuleId);
         }

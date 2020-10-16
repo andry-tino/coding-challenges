@@ -17,17 +17,29 @@ namespace PromoEng.Engine.Scenarios
             var skuA = new Sku("A", 100);
             var skuB = new Sku("B", 200);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(skuA, 2);
             cart.Add(skuB, 3);
             cart.TestTotal(2*100 + 3*200);
 
             var pipeline = new PromotionPipeline();
-            pipeline.AddRule(new CollectionOfSameSkuForRule(skuA, 2, 50));
-            pipeline.AddRule(new CollectionOfSameSkuForRule(skuB, 2, 100));
+            pipeline.AddRule(new CollectionOfSameSkuForRule(new TestCartFactory(), skuA, 2, 50));
+            pipeline.AddRule(new CollectionOfSameSkuForRule(new TestCartFactory(), skuB, 2, 100));
             var newCart = pipeline.Apply(cart);
 
             newCart.TestTotal(1*50 + 1*100 + 200);
         }
+
+        #region Types
+
+        private class TestCartFactory : ICartFactory
+        {
+            public ICart Create()
+            {
+                return new StandardCart();
+            }
+        }
+
+        #endregion
     }
 }

@@ -13,8 +13,8 @@ namespace PromoEng.Engine.Scenarios
         /// Checks the cart total is expected.
         /// </summary>
         /// <param name="cart">The cart to check.</param>
-        /// <param name="expected">The expected value for <see cref="Cart.Total"/>.</param>
-        public static void TestTotal(this Cart cart, decimal expected)
+        /// <param name="expected">The expected value for <see cref="ICart.Total"/>.</param>
+        public static void TestTotal(this ICart cart, decimal expected)
         {
             Assert.Equal(expected, cart.Total);
         }

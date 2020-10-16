@@ -6,20 +6,20 @@ using Xunit;
 namespace PromoEng.Engine.UnitTests
 {
     /// <summary>
-    /// Unit tests for <see cref="Cart"/>.
+    /// Unit tests for <see cref="StandardCart"/>.
     /// </summary>
-    public class CartTests
+    public class StandardCartTests
     {
         [Fact]
         public void WhenCreatedThenCartIsEmpty()
         {
-            Assert.Equal(0, new Cart().Count);
+            Assert.Equal(0, new StandardCart().Count);
         }
 
         [Fact]
         public void WhenAddingASkuThenQuantityIsUnit()
         {
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             cart.Add(new Sku("A", 0));
 
             Assert.Equal(1, cart.First().Quantity);
@@ -28,7 +28,7 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenAddingASkuThenPriceIsSameAsUnit()
         {
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             decimal price = 100;
             cart.Add(new Sku("A", price));
 
@@ -38,7 +38,7 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenAddingASkuWithQuantityThenPriceIsUnitByQuantity()
         {
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             decimal price = 100;
             int quantity = 3;
             cart.Add(new Sku("A", price), quantity);
@@ -53,7 +53,7 @@ namespace PromoEng.Engine.UnitTests
             decimal priceB = 50;
             decimal priceC = 20;
 
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             cart.Add(new Sku("A", priceA));
             cart.Add(new Sku("B", priceB));
             cart.Add(new Sku("C", priceC));
@@ -68,10 +68,10 @@ namespace PromoEng.Engine.UnitTests
             int quantityB = 2;
             int quantityC = 3;
 
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             cart.Add(new Sku("A", 0));
-            cart.Add(new Cart.SkuCartEntry() { Sku = new Sku("B", 0), Quantity = quantityB });
-            cart.Add(new Cart.SkuCartEntry() { Sku = new Sku("C", 0), Quantity = quantityC });
+            cart.Add(new SkuCartEntry() { Sku = new Sku("B", 0), Quantity = quantityB });
+            cart.Add(new SkuCartEntry() { Sku = new Sku("C", 0), Quantity = quantityC });
 
             Assert.Equal(quantityA + quantityB + quantityC, cart.Count);
         }
@@ -79,7 +79,7 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenAddingItemsThenTotalChanges()
         {
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             Assert.Equal(0, cart.Total);
 
             cart.Add(new Sku("A", 10));
@@ -89,10 +89,10 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenMergingTwoEmptyCartsThenResultingCartIsEmpty()
         {
-            var cart1 = new Cart();
-            var cart2 = new Cart();
+            ICart cart1 = new StandardCart();
+            ICart cart2 = new StandardCart();
 
-            var mergedCart = cart1.Merge(cart2);
+            ICart mergedCart = cart1.Merge(cart2);
 
             Assert.Equal(0, mergedCart.Count);
         }
@@ -100,11 +100,11 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenMergingWithAnEmptyCartThenResultingCartIsSameAsOriginal()
         {
-            var cart = new Cart();
+            ICart cart = new StandardCart();
             var id = "A";
             cart.Add(new Sku(id, 0));
 
-            var mergedCart = cart.Merge(new Cart());
+            ICart mergedCart = cart.Merge(new StandardCart());
 
             Assert.Equal(cart.Count, mergedCart.Count);
         }
@@ -116,15 +116,15 @@ namespace PromoEng.Engine.UnitTests
             var idB = "B";
             var idC = "C";
 
-            var cart1 = new Cart();
+            ICart cart1 = new StandardCart();
             cart1.Add(new Sku(idA, 0));
 
-            var cart2 = new Cart();
+            ICart cart2 = new StandardCart();
             cart2.Add(new Sku(idB, 0));
             cart2.Add(new Sku(idC, 0));
 
-            var mergedCart1 = cart1.Merge(cart2);
-            var mergedCart2 = cart2.Merge(cart1);
+            ICart mergedCart1 = cart1.Merge(cart2);
+            ICart mergedCart2 = cart2.Merge(cart1);
 
             Assert.Equal(mergedCart1.Count, mergedCart2.Count);
             Assert.Equal(1, mergedCart1.Count(entry => entry.Sku.Id == idA));
@@ -142,14 +142,14 @@ namespace PromoEng.Engine.UnitTests
             var idB = "B";
             var idC = "C";
 
-            var cart1 = new Cart();
+            ICart cart1 = new StandardCart();
             cart1.Add(new Sku(idA, 0));
 
-            var cart2 = new Cart();
+            ICart cart2 = new StandardCart();
             cart2.Add(new Sku(idB, 0));
             cart2.Add(new Sku(idC, 0));
 
-            var mergedCart = cart1.Merge(cart2);
+            ICart mergedCart = cart1.Merge(cart2);
 
             Assert.Equal(3, mergedCart.Count);
             Assert.Equal(1, mergedCart.Count(entry => entry.Sku.Id == idA));
@@ -160,8 +160,8 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void CountWithEntriesHavingNonUnitQuantities()
         {
-            var cart = new Cart();
-            cart.Add(new Cart.SkuCartEntry()
+            ICart cart = new StandardCart();
+            cart.Add(new SkuCartEntry()
             { 
                 Sku = new Sku("A", 0),
                 Quantity = 2

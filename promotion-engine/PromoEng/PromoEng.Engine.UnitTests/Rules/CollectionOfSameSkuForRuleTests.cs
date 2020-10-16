@@ -25,7 +25,7 @@ namespace PromoEng.Engine.UnitTests
             CollectionOfSameSkuForRule rule = null;
             Action create = () =>
             {
-                rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+                rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
             };
 
             if (sku == null)
@@ -61,16 +61,16 @@ namespace PromoEng.Engine.UnitTests
 
             var sku = new Sku("A", basePrice);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber, newCart.Count);
 
-            Action<Cart.SkuCartEntry> batchChecker = entry =>
+            Action<SkuCartEntry> batchChecker = entry =>
             {
                 entry.CheckCartEntryWasProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -95,22 +95,22 @@ namespace PromoEng.Engine.UnitTests
 
             var sku = new Sku("A", basePrice);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(batchesNumber + residualsNumber, newCart.Count);
 
-            Action<Cart.SkuCartEntry> batchChecker = entry =>
+            Action<SkuCartEntry> batchChecker = entry =>
             {
                 entry.CheckCartEntryWasProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
                 Assert.Equal(batchPrice, entry.Price);
             };
-            Action<Cart.SkuCartEntry> residualChecker = entry =>
+            Action<SkuCartEntry> residualChecker = entry =>
             {
                 entry.CheckCartEntryWasNotProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -135,16 +135,16 @@ namespace PromoEng.Engine.UnitTests
 
             var sku = new Sku("A", basePrice);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(itemsNumberToAdd, cart.Count);
             Assert.Single(cart);
 
-            var rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(itemsNumberToAdd, newCart.Count);
 
-            Action<Cart.SkuCartEntry> residualChecker = entry =>
+            Action<SkuCartEntry> residualChecker = entry =>
             {
                 entry.CheckCartEntryWasNotProcessedByRule();
                 Assert.Equal(1, entry.Quantity);
@@ -166,13 +166,25 @@ namespace PromoEng.Engine.UnitTests
 
             var sku = new Sku("A", basePrice);
 
-            var cart = new Cart();
+            var cart = new StandardCart();
             cart.Add(sku, itemsNumberToAdd);
             Assert.Equal(basePrice * itemsNumberToAdd, cart.Total);
 
-            var rule = new CollectionOfSameSkuForRule(sku, batchQuantity, batchPrice);
+            var rule = new CollectionOfSameSkuForRule(new TestCartFactory(), sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
             Assert.Equal(basePrice * residualsNumber + batchPrice * batchesNumber, newCart.Total);
         }
+
+        #region Types
+
+        private class TestCartFactory : ICartFactory
+        {
+            public ICart Create()
+            {
+                return new StandardCart();
+            }
+        }
+
+        #endregion
     }
 }

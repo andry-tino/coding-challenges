@@ -5,7 +5,7 @@ namespace PromoEng.CoreWebApi
     /// <summary>
     /// Represents a cart.
     /// </summary>
-    public class CartInfo : CartOperationInfo
+    public class CartInfo
     {
         /// <summary>
         /// Gets the unique identifier of this cart.

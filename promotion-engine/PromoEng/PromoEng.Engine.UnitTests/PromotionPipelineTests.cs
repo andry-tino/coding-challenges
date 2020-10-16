@@ -28,7 +28,7 @@ namespace PromoEng.Engine.UnitTests
             pipeline.AddRule(ruleA);
             pipeline.AddRule(ruleB);
 
-            pipeline.Apply(new Cart());
+            pipeline.Apply(new StandardCart());
 
             Assert.True(pipeline.RunHistory.Any());
             Assert.Equal(2, pipeline.RunHistory.Count);
@@ -47,7 +47,7 @@ namespace PromoEng.Engine.UnitTests
                 this.RunHistory = new List<IPromotionRule>();
             }
 
-            protected override Cart RunRule(IPromotionRule rule, Cart cart)
+            protected override ICart RunRule(IPromotionRule rule, ICart cart)
             {
                 this.RunHistory.Add(rule);
                 return base.RunRule(rule, cart);
@@ -56,17 +56,17 @@ namespace PromoEng.Engine.UnitTests
 
         private class PromotionRuleA : IPromotionRule
         {
-            public Cart Evaluate(Cart originalCart)
+            public ICart Evaluate(ICart originalCart)
             {
-                return originalCart.Clone() as Cart;
+                return originalCart.Clone() as ICart;
             }
         }
 
         private class PromotionRuleB : IPromotionRule
         {
-            public Cart Evaluate(Cart originalCart)
+            public ICart Evaluate(ICart originalCart)
             {
-                return originalCart.Clone() as Cart;
+                return originalCart.Clone() as ICart;
             }
         }
 

@@ -9,6 +9,8 @@ namespace PromoEng.Engine.Rules
     /// </summary>
     public class PairOfDifferentSkusForRule : IPromotionRule
     {
+        private readonly ICartFactory cartFactory;
+
         /// <summary>
         /// Gets the unique identifier of this rule.
         /// </summary>
@@ -32,28 +34,30 @@ namespace PromoEng.Engine.Rules
         /// <summary>
         /// Initializes a new instance of the <see cref="PairOfDifferentSkusForRule"/> class.
         /// </summary>
+        /// <param name="cartFactory">The <see cref="ICartFactory"/> to use to generate a cart.</param>
         /// <param name="sku1">The first <see cref="Sku"/>.</param>
         /// <param name="sku2">The second <see cref="Sku"/>.</param>
         /// <param name="totalPrice">The total price to assign to the couple.</param>
-        public PairOfDifferentSkusForRule(Sku sku1, Sku sku2, decimal totalPrice)
+        public PairOfDifferentSkusForRule(ICartFactory cartFactory, Sku sku1, Sku sku2, decimal totalPrice)
         {
+            this.cartFactory = cartFactory ?? throw new ArgumentNullException(nameof(cartFactory));
             this.Sku1 = sku1 ?? throw new ArgumentNullException(nameof(sku1));
             this.Sku2 = sku2 ?? throw new ArgumentNullException(nameof(sku2));
             this.TotalPrice = Math.Abs(totalPrice);
         }
 
         /// <inheritdoc/>
-        public Cart Evaluate(Cart originalCart)
+        public ICart Evaluate(ICart originalCart)
         {
             if (originalCart == null)
             {
                 return null;
             }
 
-            var cart = new Cart();
-            Func<Cart.SkuCartEntry, bool> candidateConditionSku1 =
+            var cart = this.cartFactory.Create();
+            Func<SkuCartEntry, bool> candidateConditionSku1 =
                 (entry) => entry.Sku.CompareTo(this.Sku1) == 0 && entry.PromotionRuleId == null;
-            Func<Cart.SkuCartEntry, bool> candidateConditionSku2 =
+            Func<SkuCartEntry, bool> candidateConditionSku2 =
                 (entry) => entry.Sku.CompareTo(this.Sku2) == 0 && entry.PromotionRuleId == null;
 
             // Get all candidate Sku1 entries
@@ -69,7 +73,7 @@ namespace PromoEng.Engine.Rules
             {
                 if (!candidateConditionSku1(entry) && !candidateConditionSku2(entry))
                 {
-                    cart.Add(entry.Clone() as Cart.SkuCartEntry);
+                    cart.Add(entry.Clone() as SkuCartEntry);
                 }
             }
 
@@ -83,7 +87,7 @@ namespace PromoEng.Engine.Rules
             {
                 // Do not add a single batch containing all batchable entries because we want to keep
                 // trackable the batching in the final cart description when printing
-                cart.Add(new Cart.SkuCartEntry()
+                cart.Add(new SkuCartEntry()
                 {
                     Sku = cominedSku,
                     Price = this.TotalPrice,
