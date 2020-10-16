@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
+
+using PromoEng.Testability;
 
 namespace PromoEng.Engine.UnitTests
 {
@@ -11,29 +12,21 @@ namespace PromoEng.Engine.UnitTests
     /// </summary>
     public class StandardCartTests
     {
-        private static Sku skuA = new Sku("A");
-        private static Sku skuB = new Sku("B");
-        private static Sku skuC = new Sku("C");
-        private static Sku skuZ = new Sku("Z");
-        private static IDictionary<Sku, decimal> priceList = new Dictionary<Sku, decimal>(new[]
-        {
-            new KeyValuePair<Sku, decimal>(skuA, 100),
-            new KeyValuePair<Sku, decimal>(skuB, 200),
-            new KeyValuePair<Sku, decimal>(skuC, 300),
-            new KeyValuePair<Sku, decimal>(skuZ, 0)
-        });
-
         [Fact]
         public void WhenCreatedThenCartIsEmpty()
         {
-            Assert.Equal(0, new StandardCart(priceList).Count);
+            var testContext = new TestContext();
+
+            Assert.Equal(0, testContext.CartFactory.Create().Count);
         }
 
         [Fact]
         public void WhenAddingASkuThenQuantityIsUnit()
         {
-            ICart cart = new StandardCart(priceList);
-            cart.Add(skuA);
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+            cart.Add(testContext.CreateNewSku("A", 100));
 
             Assert.Equal(1, cart.First().Quantity);
         }
@@ -41,34 +34,40 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenAddingASkuThenPriceIsSameAsItsUnitPrice()
         {
-            ICart cart = new StandardCart(priceList);
-            Sku sku = skuA;
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+            Sku sku = testContext.CreateNewSku("A", 100);
             cart.Add(sku);
 
-            Assert.Equal(priceList[sku], cart.First().Price);
+            Assert.Equal(testContext.PriceList[sku], cart.First().Price);
         }
 
         [Fact]
         public void WhenAddingASkuWithQuantityThenPriceIsUnitByQuantity()
         {
-            ICart cart = new StandardCart(priceList);
-            Sku sku = skuA;
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+            Sku sku = testContext.CreateNewSku("A", 100);
             int quantity = 3;
             cart.Add(sku, quantity);
 
-            Assert.Equal(priceList[sku] * quantity, cart.First().Price);
+            Assert.Equal(testContext.PriceList[sku] * quantity, cart.First().Price);
         }
 
         [Fact]
         public void WhenAddingASkuWithZeroUnitPriceThenTotalDoesNotChange()
         {
-            ICart cart = new StandardCart(priceList);
+            var testContext = new TestContext();
 
-            cart.Add(skuA);
+            ICart cart = testContext.CartFactory.Create();
+
+            cart.Add(testContext.CreateNewSku("A", 100));
             var total1 = cart.Total;
             Assert.NotEqual(0, total1);
 
-            cart.Add(skuZ);
+            cart.Add(testContext.CreateNewSku("Z", 0));
             var total2 = cart.Total;
             Assert.Equal(total1, total2);
         }
@@ -76,29 +75,33 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void TotalIsTheSumOfAllEntriesPrice()
         {
-            Sku sku1 = skuA;
-            Sku sku2 = skuB;
-            Sku sku3 = skuC;
+            var testContext = new TestContext();
 
-            ICart cart = new StandardCart(priceList);
+            Sku sku1 = testContext.CreateNewSku("A", 100);
+            Sku sku2 = testContext.CreateNewSku("B", 200);
+            Sku sku3 = testContext.CreateNewSku("C", 300);
+
+            ICart cart = testContext.CartFactory.Create();
             cart.Add(sku1);
             cart.Add(sku2);
             cart.Add(sku3);
 
-            Assert.Equal(priceList[sku1] + priceList[sku2] + priceList[sku3], cart.Total);
+            Assert.Equal(testContext.PriceList[sku1] + testContext.PriceList[sku2] + testContext.PriceList[sku3], cart.Total);
         }
 
         [Fact]
         public void CountIsTheSumOfAllEntriesQuantity()
         {
-            Sku sku1 = skuA;
-            Sku sku2 = skuB;
-            Sku sku3 = skuC;
+            var testContext = new TestContext();
+
+            Sku sku1 = testContext.CreateNewSku("A", 100);
+            Sku sku2 = testContext.CreateNewSku("B", 200);
+            Sku sku3 = testContext.CreateNewSku("C", 300);
             int quantity1 = 1;
             int quantity2 = 2;
             int quantity3 = 3;
 
-            ICart cart = new StandardCart(priceList);
+            ICart cart = testContext.CartFactory.Create();
             cart.Add(sku1);
             cart.Add(new SkuCartEntry() { Sku = sku2, Quantity = quantity2 });
             cart.Add(new SkuCartEntry() { Sku = sku3, Quantity = quantity3 });
@@ -109,18 +112,22 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenAddingItemsThenTotalChanges()
         {
-            ICart cart = new StandardCart(priceList);
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
             Assert.Equal(0, cart.Total);
 
-            cart.Add(skuA);
+            cart.Add(testContext.CreateNewSku("A", 100));
             Assert.NotEqual(0, cart.Total);
         }
 
         [Fact]
         public void WhenMergingTwoEmptyCartsThenResultingCartIsEmpty()
         {
-            ICart cart1 = new StandardCart(priceList);
-            ICart cart2 = new StandardCart(priceList);
+            var testContext = new TestContext();
+
+            ICart cart1 = testContext.CartFactory.Create();
+            ICart cart2 = testContext.CartFactory.Create();
 
             ICart mergedCart = cart1.Merge(cart2);
 
@@ -130,10 +137,12 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void WhenMergingWithAnEmptyCartThenResultingCartHasSameTotalAsOriginal()
         {
-            ICart cart = new StandardCart(priceList);
-            cart.Add(skuA);
+            var testContext = new TestContext();
 
-            ICart mergedCart = cart.Merge(new StandardCart(priceList));
+            ICart cart = testContext.CartFactory.Create();
+            cart.Add(testContext.CreateNewSku("A", 100));
+
+            ICart mergedCart = cart.Merge(testContext.CartFactory.Create());
 
             Assert.Equal(cart.Count, mergedCart.Count);
         }
@@ -141,14 +150,16 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void MergeIsCommutative()
         {
-            Sku sku1 = skuA;
-            Sku sku2 = skuB;
-            Sku sku3 = skuC;
+            var testContext = new TestContext();
 
-            ICart cart1 = new StandardCart(priceList);
+            Sku sku1 = testContext.CreateNewSku("A", 100);
+            Sku sku2 = testContext.CreateNewSku("B", 200);
+            Sku sku3 = testContext.CreateNewSku("C", 300);
+
+            ICart cart1 = testContext.CartFactory.Create();
             cart1.Add(sku1);
 
-            ICart cart2 = new StandardCart(priceList);
+            ICart cart2 = testContext.CartFactory.Create();
             cart2.Add(sku2);
             cart2.Add(sku3);
 
@@ -167,14 +178,16 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void MergingTwoCarts()
         {
-            Sku sku1 = skuA;
-            Sku sku2 = skuB;
-            Sku sku3 = skuC;
+            var testContext = new TestContext();
 
-            ICart cart1 = new StandardCart(priceList);
+            Sku sku1 = testContext.CreateNewSku("A", 100);
+            Sku sku2 = testContext.CreateNewSku("B", 200);
+            Sku sku3 = testContext.CreateNewSku("C", 300);
+
+            ICart cart1 = testContext.CartFactory.Create();
             cart1.Add(sku1);
 
-            ICart cart2 = new StandardCart(priceList);
+            ICart cart2 = testContext.CartFactory.Create();
             cart2.Add(sku2);
             cart2.Add(sku3);
 
@@ -189,15 +202,37 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void CountWithEntriesHavingNonUnitQuantities()
         {
-            ICart cart = new StandardCart(priceList);
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
             cart.Add(new SkuCartEntry()
             { 
-                Sku = skuA,
+                Sku = testContext.CreateNewSku("A", 100),
                 Quantity = 2
             });
-            cart.Add(skuB);
+            cart.Add(testContext.CreateNewSku("B", 200));
 
             Assert.Equal(3, cart.Count);
+        }
+
+        [Fact]
+        public void WhenSkuIsNotInPricelistThenAddRaisesException()
+        {
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+
+            decimal registeredSkuPrice = 100;
+            var registeredSku = testContext.CreateNewSku("A", registeredSkuPrice);
+
+            cart.Add(registeredSku);
+            Assert.Equal(registeredSkuPrice, cart.Total);
+
+            var unregisteredSku = new Sku("U");
+            Assert.Throws<StandardCart.SkuNotFoundInPriceListException>(() =>
+            {
+                cart.Add(unregisteredSku); // Adding SKU but no price registered in pricelist
+            });
         }
     }
 }
