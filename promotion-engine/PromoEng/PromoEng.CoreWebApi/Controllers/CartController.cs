@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using PromoEng.Engine;
 
 namespace PromoEng.CoreWebApi.Controllers
@@ -21,6 +20,7 @@ namespace PromoEng.CoreWebApi.Controllers
         private readonly IInMemoryCollection<CartsCollection.CartsCollectionEntry> dataSource;
         private readonly ICartFactory cartFactory;
         private readonly IDictionary<Sku, decimal> priceList;
+        private readonly IPromotionPipeline promotionPipeline;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CartController"/> class.
@@ -29,15 +29,18 @@ namespace PromoEng.CoreWebApi.Controllers
         /// <param name="dataSource">The database to use.</param>
         /// <param name="cartFactory">The cart factory to use.</param>
         /// <param name="priceList">The price list holding the list of <see cref="Sku"/> and their prices.</param>
+        /// <param name="promotionPipeline">The pipeline to use.</param>
         public CartController(ILogger<CartController> logger, 
             IInMemoryCollection<CartsCollection.CartsCollectionEntry> dataSource,
             ICartFactory cartFactory,
-            IDictionary<Sku, decimal> priceList)
+            IDictionary<Sku, decimal> priceList,
+            IPromotionPipeline promotionPipeline)
         {
             this.logger = logger;
             this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.cartFactory = cartFactory ?? throw new ArgumentNullException(nameof(cartFactory));
             this.priceList = priceList ?? throw new ArgumentNullException(nameof(priceList));
+            this.promotionPipeline = promotionPipeline ?? throw new ArgumentNullException(nameof(promotionPipeline));
         }
 
         /// <summary>
@@ -81,7 +84,8 @@ namespace PromoEng.CoreWebApi.Controllers
                     {
                         SkuId = entry.Sku.Id,
                         Price = entry.Price
-                    })
+                    }),
+                    Total = cartEntry.Cart.Total
                 }
             };
         }
@@ -170,7 +174,7 @@ namespace PromoEng.CoreWebApi.Controllers
                     new Exception($"To add to a cart a valid SKU id is required"));
             }
 
-            var sku = this.priceList.Keys.First(sku => sku.Id == id);
+            var sku = this.priceList.Keys.FirstOrDefault(sku => sku.Id == id);
             if (sku == null)
             {
                 this.logger.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: SKU not found");
@@ -193,8 +197,12 @@ namespace PromoEng.CoreWebApi.Controllers
                     new Exception($"Cart with id '{id}' is checked out, operation forbidden"));
             }
 
+            // Execute the add and modify the cart
             cartEntry.Cart.Add(sku, quantity.HasValue ? quantity.Value : 1);
             this.logger.LogInformation($"Added {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}");
+
+            // Every time we modify the cart, we rerun the pipeline and update the cart
+            cartEntry.Cart = this.ApplyPipeline(cartEntry.Cart, cartEntry.Id);
 
             return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Successful)
             {
@@ -234,6 +242,24 @@ namespace PromoEng.CoreWebApi.Controllers
             {
                 Body = "deleted"
             };
+        }
+
+        private ICart ApplyPipeline(ICart cart, string cartId)
+        {
+            ICart newCart = this.promotionPipeline.Apply(cart);
+
+            this.logger.LogInformation($"Cart {cartId} updated through pipeline: {cart.Total} => {newCart.Total}");
+
+            var faultTolerantPipeline = this.promotionPipeline as FaultTolerantPromotionPipeline;
+            if (faultTolerantPipeline != null && faultTolerantPipeline.LastApplyExceptions.Any())
+            {
+                foreach (var errorReport in faultTolerantPipeline.LastApplyExceptions)
+                {
+                    this.logger.LogError($"Cart {cartId} updated with errors: rule '{errorReport.Item1}' faulted with '{errorReport.Item2.Message}'");
+                }
+            }
+
+            return newCart;
         }
     }
 }

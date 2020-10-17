@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PromoEng.CoreWebApi.Model;
+
 using PromoEng.Engine;
 
 namespace PromoEng.CoreWebApi
@@ -41,19 +41,8 @@ namespace PromoEng.CoreWebApi
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add configuration for the promotion engine
-            services.Configure<PromotionEngineOptions>(
-                this.Configuration.GetSection(PromotionEngineOptions.Position));
-
-            // Add dependency on the in-memory collection of carts
-            IInMemoryCollection<CartsCollection.CartsCollectionEntry> cartsInMemoryCollection = new CartsCollection();
-            services.AddSingleton<IInMemoryCollection<CartsCollection.CartsCollectionEntry>>(cartsInMemoryCollection);
-
-            // Add dependency on the pricelist and the cart factory
-            IDictionary<Sku, decimal> priceList = new Dictionary<Sku, decimal>(); // TODO: Load the pricelist
-            ICartFactory cartFactory = new CartFactory(priceList); // TODO: Load the pricelist
-            services.AddSingleton<ICartFactory>(cartFactory);
-            services.AddSingleton<IDictionary<Sku, decimal>>(priceList);
+            // Configure the promotion engine
+            this.ConfigurePromotionEngine(services);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
@@ -92,6 +81,37 @@ namespace PromoEng.CoreWebApi
             {
                 endpoints.MapControllers();
             });
+        }
+
+        /// <summary>
+        /// Makes sure services are configured to add dependencies for using
+        /// the promotion engine across components.
+        /// </summary>
+        private void ConfigurePromotionEngine(IServiceCollection services)
+        {
+            // Add dependency on the in-memory collection of carts
+            IInMemoryCollection<CartsCollection.CartsCollectionEntry> cartsInMemoryCollection = new CartsCollection();
+            services.AddSingleton<IInMemoryCollection<CartsCollection.CartsCollectionEntry>>(cartsInMemoryCollection);
+
+            // Retrieve configuration and generate the pricelist and the pipeline out of those
+            // 1. From the options, get the list of SKUs to load
+            // 2. Create a cart factory and pass the pricelist to it
+            // 3. From the options, get the list of rules to load
+            // 4. Create the pipeline by using the list of SKUs and the list of rules
+            PromotionEngineOptions promotionEngineOptions = this.Configuration.GetSection(PromotionEngineOptions.ConfigurationKeyName)
+                .Get<PromotionEngineOptions>();
+
+            IDictionary<Sku, decimal> skuPriceList = new SkuPriceListFactory(promotionEngineOptions.Skus).Create();
+
+            ICartFactory cartFactory = new CartFactory(skuPriceList);
+
+            IPromotionPipeline promotionPipeline = new PromotionPipelineFactory(promotionEngineOptions.Rules,
+                cartFactory, skuPriceList.Keys).Create();
+
+            // Add dependencies on cart factory, pricelist and pipeline
+            services.AddSingleton<ICartFactory>(cartFactory);
+            services.AddSingleton<IDictionary<Sku, decimal>>(skuPriceList);
+            services.AddSingleton<IPromotionPipeline>(promotionPipeline);
         }
     }
 }

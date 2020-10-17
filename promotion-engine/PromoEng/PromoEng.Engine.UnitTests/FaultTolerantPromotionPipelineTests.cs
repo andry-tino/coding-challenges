@@ -20,6 +20,17 @@ namespace PromoEng.Engine.UnitTests
         }
 
         [Fact]
+        public void WhenAddingNullRuleThenExceptionIsThrown()
+        {
+            var pipeline = new TestPromotionPipeline();
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                pipeline.AddRule(null);
+            });
+        }
+
+        [Fact]
         public void RulesAreExecutedInOrder()
         {
             var testContext = new TestContext();

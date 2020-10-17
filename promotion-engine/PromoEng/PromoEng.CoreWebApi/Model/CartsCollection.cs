@@ -70,7 +70,7 @@ namespace PromoEng.CoreWebApi
         public class CartsCollectionEntry : IUniqueResource
         {
             /// <summary>
-            /// Gets or sets the cart info header.
+            /// Gets the cart info header.
             /// The cart itself does not come with identification quantities by design,
             /// that responsability has to be taken by whatever other component using it.
             /// </summary>
@@ -79,7 +79,7 @@ namespace PromoEng.CoreWebApi
             /// <summary>
             /// Gets or sets the actual cart.
             /// </summary>
-            public ICart Cart { get; private set; }
+            public ICart Cart { get; set; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="CartsCollectionEntry"/> class.

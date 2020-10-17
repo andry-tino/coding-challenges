@@ -6,39 +6,59 @@ namespace PromoEng.CoreWebApi
     /// <summary>
     /// Represents a configuration object for setting up the server.
     /// </summary>
-    internal class PromotionEngineOptions
+    public class PromotionEngineOptions
     {
         /// <summary>
         /// The configuration key in the settings file.
         /// </summary>
-        public const string Position = "PromotionEngine";
+        public const string ConfigurationKeyName = "PromotionEngine";
 
         /// <summary>
         /// Gets or sets the collection of promotion rules
         /// </summary>
-        public IEnumerable<PromotionRuleOption> Rules { get; set; }
+        public IList<PromotionRuleOption> Rules { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of available SKUs.
         /// </summary>
-        public IEnumerable<string> Skus { get; set; }
+        public IEnumerable<SkuOption> Skus { get; set; }
     }
 
     /// <summary>
     /// Represents a configuration key for one promotion rule.
     /// </summary>
-    internal class PromotionRuleOption
+    public class PromotionRuleOption
     {
         /// <summary>
         /// Gets or sets the name (identifier) of the rule.
         /// </summary>
-        public string Name { get; set; }
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first parameter of the rule.
+        /// </summary>
+        public string Param1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the second parameter of the rule.
+        /// </summary>
+        public string Param2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the third parameter of the rule.
+        /// </summary>
+        public string Param3 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fourth parameter of the rule.
+        /// </summary>
+        public string Param4 { get; set; }
     }
 
     /// <summary>
     /// Represents a configuration key for one SKU.
     /// </summary>
-    internal class SkuOption
+    public class SkuOption
     {
         /// <summary>
         /// Gets or sets the identifier of the SKU.

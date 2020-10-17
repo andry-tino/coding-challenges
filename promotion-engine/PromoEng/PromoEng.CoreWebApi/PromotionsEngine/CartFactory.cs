@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using PromoEng.Engine;
 
-namespace PromoEng.CoreWebApi.Model
+namespace PromoEng.CoreWebApi
 {
     /// <summary>
     /// Factory for creating instances of <see cref="ICart"/> in the web core app.
