@@ -4,6 +4,8 @@ namespace PromoEng.Engine
 {
     /// <summary>
     /// Describes a a promotion rule.
+    /// A promotion rule will rearrange a <see cref="ICart"/> in order to apply a specific promotion.
+    /// One promotion rule only can be applied to a single <see cref="Sku"/> in the cart.
     /// </summary>
     public interface IPromotionRule
     {
