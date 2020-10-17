@@ -11,7 +11,7 @@ namespace PromoEng.Engine.UnitTests
     /// <summary>
     /// Unit tests for <see cref="FaultTolerantPromotionPipeline"/>.
     /// </summary>
-    public class PromotionPipelineTests
+    public class FaultTolerantPromotionPipelineTests
     {
         [Fact]
         public void WhenCartIsNullThenNullCartIsReturned()
