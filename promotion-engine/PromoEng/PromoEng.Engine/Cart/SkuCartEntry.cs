@@ -55,5 +55,11 @@ namespace PromoEng.Engine
                 Description = this.Description
             };
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{this.Sku.ToString()} x {this.Quantity} : {this.Price} - {this.Description}";
+        }
     }
 }

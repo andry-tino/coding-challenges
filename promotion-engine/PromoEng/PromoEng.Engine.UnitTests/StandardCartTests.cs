@@ -90,7 +90,7 @@ namespace PromoEng.Engine.UnitTests
         }
 
         [Fact]
-        public void CountIsTheSumOfAllEntriesQuantity()
+        public void QuantityIsTheSumOfAllEntriesQuantity()
         {
             var testContext = new TestContext();
 
@@ -107,6 +107,24 @@ namespace PromoEng.Engine.UnitTests
             cart.Add(new SkuCartEntry() { Sku = sku3, Quantity = quantity3 });
 
             Assert.Equal(quantity1 + quantity2 + quantity3, cart.Quantity);
+        }
+
+        [Fact]
+        public void CountIsTheNumberOfEntries()
+        {
+            var testContext = new TestContext();
+
+            Sku sku1 = testContext.CreateNewSku("A", 100);
+            Sku sku2 = testContext.CreateNewSku("B", 200);
+            Sku sku3 = testContext.CreateNewSku("C", 300);
+
+            ICart cart = testContext.CartFactory.Create();
+            cart.Add(new SkuCartEntry() { Sku = sku1, Quantity = 1 });
+            cart.Add(new SkuCartEntry() { Sku = sku2, Quantity = 2 });
+            cart.Add(new SkuCartEntry() { Sku = sku3, Quantity = 3 });
+
+            Assert.NotEqual(cart.Quantity, cart.Count);
+            Assert.Equal(3, cart.Count);
         }
 
         [Fact]
@@ -200,7 +218,7 @@ namespace PromoEng.Engine.UnitTests
         }
 
         [Fact]
-        public void CountWithEntriesHavingNonUnitQuantities()
+        public void QuantityWithEntriesHavingNonUnitQuantities()
         {
             var testContext = new TestContext();
 
@@ -233,6 +251,27 @@ namespace PromoEng.Engine.UnitTests
             {
                 cart.Add(unregisteredSku); // Adding SKU but no price registered in pricelist
             });
+        }
+
+        [Fact]
+        public void ToStringReturnsANonEmptyStringWhenCartIsNotEmpty()
+        {
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+            cart.Add(testContext.CreateNewSku("A", 100));
+
+            Assert.False(string.IsNullOrEmpty(cart.ToString()));
+        }
+
+        [Fact]
+        public void ToStringReturnsANonEmptyStringWhenCartIsEmpty()
+        {
+            var testContext = new TestContext();
+
+            ICart cart = testContext.CartFactory.Create();
+
+            Assert.False(string.IsNullOrEmpty(cart.ToString()));
         }
     }
 }

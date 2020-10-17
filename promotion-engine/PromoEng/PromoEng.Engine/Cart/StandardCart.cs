@@ -80,10 +80,7 @@ namespace PromoEng.Engine
         IEnumerator IEnumerable.GetEnumerator() => this.items.GetEnumerator();
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return base.ToString();
-        }
+        public override string ToString() => this.PrintCart();
 
         /// <inheritdoc/>
         public object Clone()
