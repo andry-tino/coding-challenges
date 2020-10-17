@@ -10,6 +10,7 @@ namespace PromoEng.Engine.UnitTests
 {
     /// <summary>
     /// Common unit tests for all <see cref="IPromotionRule"/>.
+    /// These tests target common behavior that all rules must comply to.
     /// </summary>
     public class PromotionRuleTests
     {
