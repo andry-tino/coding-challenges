@@ -59,7 +59,7 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{this.Sku.ToString()} x {this.Quantity} : {this.Price} - {this.Description}";
+            return $"{this.Sku?.ToString() ?? string.Empty} x {this.Quantity} : {this.Price} - {this.Description ?? string.Empty}";
         }
     }
 }

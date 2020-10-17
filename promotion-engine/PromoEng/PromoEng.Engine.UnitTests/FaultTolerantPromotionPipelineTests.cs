@@ -4,7 +4,7 @@ using System.Linq;
 
 using Xunit;
 
-using PromoEng.Engine;
+using PromoEng.Testability;
 
 namespace PromoEng.Engine.UnitTests
 {
@@ -22,13 +22,15 @@ namespace PromoEng.Engine.UnitTests
         [Fact]
         public void RulesAreExecutedInOrder()
         {
+            var testContext = new TestContext();
+
             var pipeline = new TestPromotionPipeline();
             var ruleA = new PromotionRuleA();
             var ruleB = new PromotionRuleB();
             pipeline.AddRule(ruleA);
             pipeline.AddRule(ruleB);
 
-            pipeline.Apply(new StandardCart(new Dictionary<Sku, decimal>()));
+            pipeline.Apply(testContext.CartFactory.Create());
 
             Assert.True(pipeline.RunHistory.Any());
             Assert.Equal(2, pipeline.RunHistory.Count);
@@ -37,45 +39,163 @@ namespace PromoEng.Engine.UnitTests
         }
 
         [Fact]
-        public void WhenApplicatkionWithNoErrorsThenExceptionsListIsEmpty()
+        public void WhenNoRulesThenExceptionsListIsEmpty()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.Empty(pipeline.LastApplyExceptions);
         }
 
         [Fact]
-        public void WhenApplicatkionWithErrorsThenExceptionsListIsNotEmpty()
+        public void WhenApplicationWithNoErrorsThenExceptionsListIsEmpty()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            pipeline.AddRule(new PromotionRuleA());
+            pipeline.AddRule(new PromotionRuleB());
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.Empty(pipeline.LastApplyExceptions);
         }
 
         [Fact]
-        public void WhenApplicatkionWithErrorThenExceptionsListReportsFaultyRule()
+        public void WhenApplicationWithErrorsThenExceptionsListIsNotEmpty()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            pipeline.AddRule(new PromotionRuleA());
+            pipeline.AddRule(new FaultyPromotionRule());
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.NotEmpty(pipeline.LastApplyExceptions);
         }
 
         [Fact]
-        public void WhenApplicatkionWithErrorsThenExceptionsListReportsFaultyRules()
+        public void WhenApplicationWithErrorThenExceptionsListReportsFaultyRule()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            var ruleA = new PromotionRuleA();
+            var ruleB = new FaultyPromotionRule();
+            pipeline.AddRule(ruleA);
+            pipeline.AddRule(ruleB);
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.NotEmpty(pipeline.LastApplyExceptions);
+            Assert.Collection(pipeline.LastApplyExceptions, errorEntry =>
+                {
+                    Assert.True((object)errorEntry.Item1 == (object)ruleB);
+                    Assert.IsType<TestException>(errorEntry.Item2);
+                });
         }
 
         [Fact]
-        public void WhenApplicatkionWithErrorThenPipelineMovesToNextRule()
+        public void WhenApplicationWithErrorsThenExceptionsListReportsFaultyRules()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            var ruleA = new PromotionRuleA();
+            var ruleB = new FaultyPromotionRule();
+            var ruleC = new PromotionRuleA();
+            var ruleD = new FaultyPromotionRule();
+            pipeline.AddRule(ruleA);
+            pipeline.AddRule(ruleB);
+            pipeline.AddRule(ruleC);
+            pipeline.AddRule(ruleD);
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.NotEmpty(pipeline.LastApplyExceptions);
+
+            Assert.Collection(pipeline.LastApplyExceptions,
+                errorEntry =>
+                {
+                    Assert.True((object)errorEntry.Item1 == (object)ruleB);
+                    Assert.IsType<TestException>(errorEntry.Item2);
+                },
+                errorEntry =>
+                {
+                    Assert.True((object)errorEntry.Item1 == (object)ruleD);
+                    Assert.IsType<TestException>(errorEntry.Item2);
+                });
         }
 
         [Fact]
-        public void WhenApplicatkionWithErrorsThenPipelineMovesToNextRule()
+        public void WhenNextRuleFaultsThenPreviousRulesActionIsPreserved()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            var sku = testContext.CreateNewSku("S", 0);
+            var ruleA = new SideEffectsPromotionRule(sku);
+            var ruleB = new FaultyPromotionRule();
+            pipeline.AddRule(ruleA);
+            pipeline.AddRule(ruleB);
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.NotEmpty(pipeline.LastApplyExceptions);
+            Assert.Collection(cart, entry =>
+            {
+                Assert.True((object)entry.Sku == (object)sku);
+            });
+        }
+
+        [Fact]
+        public void WhenPreviousRuleFaultsThenNextRulesActionIsPreserved()
+        {
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            var sku = testContext.CreateNewSku("S", 0);
+            var ruleA = new FaultyPromotionRule();
+            var ruleB = new SideEffectsPromotionRule(sku);
+            pipeline.AddRule(ruleA);
+            pipeline.AddRule(ruleB);
+
+            ICart cart = pipeline.Apply(testContext.CartFactory.Create());
+
+            Assert.NotNull(cart);
+            Assert.NotEmpty(pipeline.LastApplyExceptions);
+            Assert.Collection(cart, entry =>
+            {
+                Assert.True((object)entry.Sku == (object)sku);
+            });
         }
 
         [Fact]
         public void WhenAllRulesFailThenReturnedCartIsTheSameAsOriginal()
         {
-            Assert.True(false);
+            var testContext = new TestContext();
+
+            var pipeline = new FaultTolerantPromotionPipeline();
+            var ruleA = new FaultyPromotionRule();
+            var ruleB = new FaultyPromotionRule();
+            pipeline.AddRule(ruleA);
+            pipeline.AddRule(ruleB);
+
+            ICart originalCart = testContext.CartFactory.Create();
+            ICart newCart = pipeline.Apply(originalCart);
+
+            Assert.NotNull(newCart);
+            Assert.True((object)newCart == (object)originalCart);
         }
 
         #region Types
@@ -110,6 +230,35 @@ namespace PromoEng.Engine.UnitTests
             {
                 return originalCart.Clone() as ICart;
             }
+        }
+
+        private class SideEffectsPromotionRule : IPromotionRule
+        {
+            private readonly Sku sku;
+            public SideEffectsPromotionRule(Sku sku)
+            {
+                this.sku = sku;
+            }
+
+            public ICart Evaluate(ICart originalCart)
+            {
+                var newCart = originalCart.Clone() as ICart;
+                newCart.Add(this.sku);
+
+                return newCart;
+            }
+        }
+
+        private class FaultyPromotionRule : IPromotionRule
+        {
+            public ICart Evaluate(ICart originalCart)
+            {
+                throw new TestException();
+            }
+        }
+
+        private class TestException : Exception
+        {
         }
 
         #endregion
