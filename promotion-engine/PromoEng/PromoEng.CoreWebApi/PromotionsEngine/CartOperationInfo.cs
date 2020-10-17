@@ -50,7 +50,7 @@ namespace PromoEng.CoreWebApi
             if (exception == null && status == CartOperationStatus.Error)
             {
                 throw new ArgumentNullException(nameof(exception),
-                    "An exception must be specified when the operation did not succeed");
+                    "Necessary and sufficient condition for exception to be present is that the message is set as error");
             }
         }
     }

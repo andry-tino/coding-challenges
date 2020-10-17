@@ -22,7 +22,7 @@ namespace PromoEng.CoreWebApi.Controllers.UnitTests
         }
 
         [Fact]
-        public void WhenCartDoesNotExistThenGetCartReturnsNull()
+        public void WhenCartDoesNotExistThenGetCartReturnsExceptionInMessage()
         {
 
         }
@@ -40,7 +40,19 @@ namespace PromoEng.CoreWebApi.Controllers.UnitTests
         }
 
         [Fact]
-        public void WhenCheckoutNonExistingCartThenNoChangesInCollection()
+        public void WhenCheckoutNonExistingCartThenExceptionIsReturnedInMessage()
+        {
+
+        }
+
+        [Fact]
+        public void WhenCheckoutAlreadyCheckedoutCartThenExceptionIsReturnedInMessage()
+        {
+
+        }
+
+        [Fact]
+        public void WhenCheckoutEmptyCartThenExceptionIsReturnedInMessage()
         {
 
         }
@@ -52,7 +64,25 @@ namespace PromoEng.CoreWebApi.Controllers.UnitTests
         }
 
         [Fact]
-        public void WhenAddingToNonExistingCartThenNoChangesInCollection()
+        public void WhenAddingAndNoSkuIdSpecifiedThenExceptionIsReturnedInMessage()
+        {
+
+        }
+
+        [Fact]
+        public void WhenAddingToNonExistingCartThenExceptionIsReturnedInMessage()
+        {
+
+        }
+
+        [Fact]
+        public void WhenAddingToCartAndSkuCouldNotBeFoundThenExceptionIsReturnedInMessage()
+        {
+
+        }
+
+        [Fact]
+        public void WhenAddingToCheckedOutCartThenExceptionIsReturnedInMessage()
         {
 
         }
@@ -64,7 +94,7 @@ namespace PromoEng.CoreWebApi.Controllers.UnitTests
         }
 
         [Fact]
-        public void WhenDeletingNonExistingCartThenNoChangesInCollection()
+        public void WhenDeletingNonExistingCartThenExceptionIsReturnedInMessage()
         {
 
         }

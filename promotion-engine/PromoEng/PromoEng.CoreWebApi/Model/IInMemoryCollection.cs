@@ -4,16 +4,26 @@ using System.Collections.Generic;
 namespace PromoEng.CoreWebApi
 {
     /// <summary>
-    /// Describes an object capable of storing data in memory.
+    /// Describes an entity which can be identified by a <see cref="string"/>.
     /// </summary>
-    public interface IInMemoryCollection<T>
+    public interface IUniqueResource
+    {
+        /// <summary>
+        /// Gets the unique identifier
+        /// </summary>
+        string Id { get; }
+    }
+
+    /// <summary>
+    /// Describes an object capable of storing unique resources in memory.
+    /// </summary>
+    public interface IInMemoryCollection<T> where T : IUniqueResource
     {
         /// <summary>
         /// Adds an object to the collection.
         /// </summary>
-        /// <param name="key">The key to assign.</param>
         /// <param name="item">The item to add.</param>
-        void Add(string key, T item);
+        void Add(T item);
 
         /// <summary>
         /// Retrieves an object from the collection.

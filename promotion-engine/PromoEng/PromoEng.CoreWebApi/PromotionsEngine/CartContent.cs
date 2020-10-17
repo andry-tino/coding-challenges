@@ -18,7 +18,7 @@ namespace PromoEng.CoreWebApi
         /// <summary>
         /// Gets or sets the collection of <see cref="Sku"/>.
         /// </summary>
-        public IEnumerable<Sku> Skus { get; set; }
+        public IEnumerable<CartEntrySummary> CartEntries { get; set; }
 
         /// <summary>
         /// Gets or sets the total value of the cart at checkout.
@@ -37,5 +37,26 @@ namespace PromoEng.CoreWebApi
         {
             this.Info = info ?? throw new ArgumentNullException(nameof(info));
         }
+
+        #region Types
+
+        /// <summary>
+        /// Represents a concise summary of a cart entry.
+        /// </summary>
+        public class CartEntrySummary
+        {
+            /// <summary>
+            /// The unique identifier of the <see cref="Sku"/> being purchased.
+            /// </summary>
+            public string SkuId { get; set; }
+
+            /// <summary>
+            /// The actual price associated to this <see cref="Sku"/> comprehensive of
+            /// whatever promotion possibly present.
+            /// </summary>
+            public decimal Price { get; set; }
+        }
+
+        #endregion
     }
 }

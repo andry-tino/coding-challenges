@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Linq;
 
 using PromoEng.Engine;
 
@@ -23,9 +22,14 @@ namespace PromoEng.CoreWebApi
         }
 
         /// <inheritdoc/>
-        public void Add(string key, CartsCollectionEntry item)
+        public void Add(CartsCollectionEntry item)
         {
-            var added = this.carts.TryAdd(key, item);
+            if (item == null)
+            {
+                return;
+            }
+
+            var added = this.carts.TryAdd(item.Id, item);
 
             if (!added)
             {
@@ -36,7 +40,7 @@ namespace PromoEng.CoreWebApi
         /// <inheritdoc/>
         public CartsCollectionEntry Retrieve(string key)
         {
-            if (this.carts.TryGetValue(key, out CartsCollectionEntry foundCart))
+            if (this.carts.TryGetValue(key ?? string.Empty, out CartsCollectionEntry foundCart))
             {
                 return foundCart;
             }
@@ -50,7 +54,7 @@ namespace PromoEng.CoreWebApi
         /// <inheritdoc/>
         public CartsCollectionEntry Remove(string key)
         {
-            if (this.carts.Remove(key, out CartsCollectionEntry removedCart))
+            if (this.carts.Remove(key ?? string.Empty, out CartsCollectionEntry removedCart))
             {
                 return removedCart;
             }
@@ -60,17 +64,36 @@ namespace PromoEng.CoreWebApi
 
         #region Types
 
-        public class CartsCollectionEntry
+        /// <summary>
+        /// Represents an entry in the <see cref="CartsCollection"/>.
+        /// </summary>
+        public class CartsCollectionEntry : IUniqueResource
         {
             /// <summary>
             /// Gets or sets the cart info header.
+            /// The cart itself does not come with identification quantities by design,
+            /// that responsability has to be taken by whatever other component using it.
             /// </summary>
-            public CartInfo Info { get; set; }
+            public CartInfo Info { get; private set; }
 
             /// <summary>
             /// Gets or sets the actual cart.
             /// </summary>
-            public ICart Cart { get; set; }
+            public ICart Cart { get; private set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CartsCollectionEntry"/> class.
+            /// </summary>
+            /// <param name="info">The info header.</param>
+            /// <param name="cart">The cart object.</param>
+            public CartsCollectionEntry(CartInfo info, ICart cart)
+            {
+                this.Info = info ?? throw new ArgumentNullException(nameof(info));
+                this.Cart = cart ?? throw new ArgumentNullException(nameof(cart));
+            }
+
+            /// <inheritdoc/>
+            public string Id => this.Info.Id;
         }
 
         #endregion

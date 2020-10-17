@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
+using PromoEng.CoreWebApi.Model;
 using PromoEng.Engine;
 
 namespace PromoEng.CoreWebApi
@@ -46,8 +46,14 @@ namespace PromoEng.CoreWebApi
                 this.Configuration.GetSection(PromotionEngineOptions.Position));
 
             // Add dependency on the in-memory collection of carts
-            var cartsInMemoryCollection = new CartsCollection();
+            IInMemoryCollection<CartsCollection.CartsCollectionEntry> cartsInMemoryCollection = new CartsCollection();
             services.AddSingleton<IInMemoryCollection<CartsCollection.CartsCollectionEntry>>(cartsInMemoryCollection);
+
+            // Add dependency on the pricelist and the cart factory
+            IDictionary<Sku, decimal> priceList = new Dictionary<Sku, decimal>(); // TODO: Load the pricelist
+            ICartFactory cartFactory = new CartFactory(priceList); // TODO: Load the pricelist
+            services.AddSingleton<ICartFactory>(cartFactory);
+            services.AddSingleton<IDictionary<Sku, decimal>>(priceList);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
