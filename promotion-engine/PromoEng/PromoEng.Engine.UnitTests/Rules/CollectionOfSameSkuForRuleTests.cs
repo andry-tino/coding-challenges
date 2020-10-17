@@ -68,12 +68,12 @@ namespace PromoEng.Engine.UnitTests
 
             var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
-            Assert.Equal(itemsNumberToAdd, cart.Count);
+            Assert.Equal(itemsNumberToAdd, cart.Quantity);
             Assert.Single(cart);
 
             var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(batchesNumber, newCart.Count);
+            Assert.Equal(batchesNumber, newCart.Quantity);
 
             Action<SkuCartEntry> batchChecker = entry =>
             {
@@ -104,12 +104,12 @@ namespace PromoEng.Engine.UnitTests
 
             var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
-            Assert.Equal(itemsNumberToAdd, cart.Count);
+            Assert.Equal(itemsNumberToAdd, cart.Quantity);
             Assert.Single(cart);
 
             var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(batchesNumber + residualsNumber, newCart.Count);
+            Assert.Equal(batchesNumber + residualsNumber, newCart.Quantity);
 
             Action<SkuCartEntry> batchChecker = entry =>
             {
@@ -146,12 +146,12 @@ namespace PromoEng.Engine.UnitTests
 
             var cart = testContext.CartFactory.Create();
             cart.Add(sku, itemsNumberToAdd);
-            Assert.Equal(itemsNumberToAdd, cart.Count);
+            Assert.Equal(itemsNumberToAdd, cart.Quantity);
             Assert.Single(cart);
 
             var rule = new CollectionOfSameSkuForRule(testContext.CartFactory, sku, batchQuantity, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(itemsNumberToAdd, newCart.Count);
+            Assert.Equal(itemsNumberToAdd, newCart.Quantity);
 
             Action<SkuCartEntry> residualChecker = entry =>
             {

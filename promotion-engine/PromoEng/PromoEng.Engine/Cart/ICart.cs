@@ -6,16 +6,20 @@ namespace PromoEng.Engine
     /// <summary>
     /// Describes a cart.
     /// </summary>
-    public interface ICart : IEnumerable<SkuCartEntry>, ICloneable
+    /// <remarks>
+    /// As a design choice, the interface does not capture any behavior related to pricing of <see cref="Sku"/>.
+    /// Each single specific implementation will deal with this in its own way.
+    /// </remarks>
+    public interface ICart : IReadOnlyList<SkuCartEntry>, ICloneable
     {
         /// <summary>
         /// Gets the total number of SKUs in the cart.
         /// </summary>
         /// <remarks>
-        /// As a design choice, the interface does not capture any behavior related to pricing of <see cref="Sku"/>.
-        /// Each single specific implementation will deal with this in its own way.
+        /// Attention: this property does not count the amount
+        /// of <see cref="SkuCartEntry"/> storedin the cart.
         /// </remarks>
-        int Count { get; }
+        int Quantity { get; }
 
         /// <summary>
         /// Adds one <see cref="Sku"/> to the cart.
@@ -48,5 +52,11 @@ namespace PromoEng.Engine
         /// Gets the total price for checkout.
         /// </summary>
         decimal Total { get; }
+
+        /// <summary>
+        /// Provides a string representation of the cart for invoicing/billing purposes.
+        /// </summary>
+        /// <returns>A <see cref="string"/>.</returns>
+        string ToString();
     }
 }

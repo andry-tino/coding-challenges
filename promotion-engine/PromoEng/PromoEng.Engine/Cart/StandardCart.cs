@@ -16,7 +16,7 @@ namespace PromoEng.Engine
     public class StandardCart : ICart
     {
         private readonly IDictionary<Sku, decimal> priceList;
-        private ICollection<SkuCartEntry> items;
+        private IList<SkuCartEntry> items;
         private decimal? total;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace PromoEng.Engine
         }
 
         /// <inheritdoc/>
-        public int Count => this.items.Sum(entry => entry.Quantity);
+        public int Quantity => this.items.Sum(entry => entry.Quantity);
 
         /// <inheritdoc/>
         public void Add(Sku sku, int quantity)
@@ -62,6 +62,12 @@ namespace PromoEng.Engine
         }
 
         /// <inheritdoc/>
+        public int Count => this.items.Count;
+
+        /// <inheritdoc/>
+        public SkuCartEntry this[int index] => this.items[index];
+
+        /// <inheritdoc/>
         public ICart Merge(ICart other)
         {
             return Merge(this, other, this.priceList);
@@ -73,11 +79,7 @@ namespace PromoEng.Engine
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => this.items.GetEnumerator();
 
-        /// <summary>
-        /// Converts the cart into a string representation providing all the info
-        /// about the cart.
-        /// </summary>
-        /// <returns>A <see cref="string"/>.</returns>
+        /// <inheritdoc/>
         public override string ToString()
         {
             return base.ToString();

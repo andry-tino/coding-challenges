@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace PromoEng.Engine.Rules
 {
@@ -57,21 +56,24 @@ namespace PromoEng.Engine.Rules
             }
 
             var cart = this.cartFactory.Create();
+
             Func<SkuCartEntry, bool> candidateCondition =
                 (entry) => entry.Sku.CompareTo(this.Sku) == 0 && entry.PromotionRuleId == null;
-            
-            // Get all candidate entries that can be batched
-            int candidatesCount = originalCart
-                .Where(entry => candidateCondition(entry))
-                .Sum(entry => entry.Quantity);
 
-            // Copy all the non-candidates to new cart
-            foreach (var entry in originalCart)
+            // Get all candidate entries that can be batched
+            // And copy all the non-candidates to new cart
+            int candidatesCount = 0;
+            for (int i = 0, l = originalCart.Count; i < l; i++)
             {
-                if (!candidateCondition(entry))
+                if (candidateCondition(originalCart[i]))
                 {
-                    cart.Add(entry.Clone() as SkuCartEntry);
+                    // Candidate: keep note of the quantity
+                    candidatesCount += originalCart[i].Quantity;
+                    continue;
                 }
+
+                // Non candidate: transfer to new cart
+                cart.Add(originalCart[i].Clone() as SkuCartEntry);
             }
 
             // Batch candidates in new cart

@@ -67,12 +67,12 @@ namespace PromoEng.Engine.UnitTests
             var cart = testContext.CartFactory.Create();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
-            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
+            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Quantity);
             Assert.Equal(2, cart.Count());
 
             var rule = new PairOfDifferentSkusForRule(testContext.CartFactory, sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(batchesNumber, newCart.Count);
+            Assert.Equal(batchesNumber, newCart.Quantity);
 
             Action<SkuCartEntry> batchChecker = entry =>
             {
@@ -107,12 +107,12 @@ namespace PromoEng.Engine.UnitTests
             var cart = testContext.CartFactory.Create();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
-            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
+            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Quantity);
             Assert.Equal(2, cart.Count());
 
             var rule = new PairOfDifferentSkusForRule(testContext.CartFactory, sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(batchesNumber + residualsNumber, newCart.Count);
+            Assert.Equal(batchesNumber + residualsNumber, newCart.Quantity);
 
             Action<SkuCartEntry> batchChecker = entry =>
             {
@@ -159,12 +159,12 @@ namespace PromoEng.Engine.UnitTests
             {
                 cart.Add(sku2, itemsNumberToAdd2);
             }
-            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
+            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Quantity);
             Assert.Single(cart);
 
             var rule = new PairOfDifferentSkusForRule(testContext.CartFactory, sku1, sku2, batchPrice);
             var newCart = rule.Evaluate(cart);
-            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, newCart.Count);
+            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, newCart.Quantity);
 
             Action<SkuCartEntry> residualChecker = entry =>
             {
@@ -199,7 +199,7 @@ namespace PromoEng.Engine.UnitTests
             var cart = testContext.CartFactory.Create();
             cart.Add(sku1, itemsNumberToAdd1);
             cart.Add(sku2, itemsNumberToAdd2);
-            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Count);
+            Assert.Equal(itemsNumberToAdd1 + itemsNumberToAdd2, cart.Quantity);
             Assert.Equal(2, cart.Count());
 
             var rule = new PairOfDifferentSkusForRule(testContext.CartFactory, sku1, sku2, batchPrice);

@@ -4,6 +4,8 @@ namespace PromoEng.Engine
 {
     /// <summary>
     /// Represents an additional information added to an <see cref="Sku"/> in the cart.
+    /// This structure associates an <see cref="Sku"/> to cart-related information such as
+    /// quantity, pricing and other promotion-related information.
     /// </summary>
     public class SkuCartEntry : ICloneable
     {
@@ -46,7 +48,7 @@ namespace PromoEng.Engine
         {
             return new SkuCartEntry()
             {
-                Sku = this.Sku, // Keep the reference to the SKU
+                Sku = this.Sku, // Keep the reference to the same SKU (do not clone it)
                 Quantity = this.Quantity,
                 Price = this.Price,
                 PromotionRuleId = this.PromotionRuleId,

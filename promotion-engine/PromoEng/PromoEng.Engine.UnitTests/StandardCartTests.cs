@@ -17,7 +17,7 @@ namespace PromoEng.Engine.UnitTests
         {
             var testContext = new TestContext();
 
-            Assert.Equal(0, testContext.CartFactory.Create().Count);
+            Assert.Equal(0, testContext.CartFactory.Create().Quantity);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace PromoEng.Engine.UnitTests
             cart.Add(new SkuCartEntry() { Sku = sku2, Quantity = quantity2 });
             cart.Add(new SkuCartEntry() { Sku = sku3, Quantity = quantity3 });
 
-            Assert.Equal(quantity1 + quantity2 + quantity3, cart.Count);
+            Assert.Equal(quantity1 + quantity2 + quantity3, cart.Quantity);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace PromoEng.Engine.UnitTests
 
             ICart mergedCart = cart1.Merge(cart2);
 
-            Assert.Equal(0, mergedCart.Count);
+            Assert.Equal(0, mergedCart.Quantity);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace PromoEng.Engine.UnitTests
 
             ICart mergedCart = cart.Merge(testContext.CartFactory.Create());
 
-            Assert.Equal(cart.Count, mergedCart.Count);
+            Assert.Equal(cart.Quantity, mergedCart.Quantity);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace PromoEng.Engine.UnitTests
             ICart mergedCart1 = cart1.Merge(cart2);
             ICart mergedCart2 = cart2.Merge(cart1);
 
-            Assert.Equal(mergedCart1.Count, mergedCart2.Count);
+            Assert.Equal(mergedCart1.Quantity, mergedCart2.Quantity);
             Assert.Equal(1, mergedCart1.Count(entry => entry.Sku == sku1));
             Assert.Equal(1, mergedCart1.Count(entry => entry.Sku == sku2));
             Assert.Equal(1, mergedCart1.Count(entry => entry.Sku == sku3));
@@ -193,7 +193,7 @@ namespace PromoEng.Engine.UnitTests
 
             ICart mergedCart = cart1.Merge(cart2);
 
-            Assert.Equal(3, mergedCart.Count);
+            Assert.Equal(3, mergedCart.Quantity);
             Assert.Equal(1, mergedCart.Count(entry => entry.Sku == sku1));
             Assert.Equal(1, mergedCart.Count(entry => entry.Sku == sku2));
             Assert.Equal(1, mergedCart.Count(entry => entry.Sku == sku3));
@@ -212,7 +212,7 @@ namespace PromoEng.Engine.UnitTests
             });
             cart.Add(testContext.CreateNewSku("B", 200));
 
-            Assert.Equal(3, cart.Count);
+            Assert.Equal(3, cart.Quantity);
         }
 
         [Fact]

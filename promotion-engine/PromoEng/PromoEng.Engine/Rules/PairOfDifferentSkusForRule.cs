@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PromoEng.Engine.Rules
 {
@@ -55,26 +53,33 @@ namespace PromoEng.Engine.Rules
             }
 
             var cart = this.cartFactory.Create();
+
             Func<SkuCartEntry, bool> candidateConditionSku1 =
                 (entry) => entry.Sku.CompareTo(this.Sku1) == 0 && entry.PromotionRuleId == null;
             Func<SkuCartEntry, bool> candidateConditionSku2 =
                 (entry) => entry.Sku.CompareTo(this.Sku2) == 0 && entry.PromotionRuleId == null;
 
-            // Get all candidate Sku1 entries
-            int candidatesSku1Count = originalCart
-                .Where(entry => candidateConditionSku1(entry))
-                .Sum(entry => entry.Quantity);
-            int candidatesSku2Count = originalCart
-                .Where(entry => candidateConditionSku2(entry))
-                .Sum(entry => entry.Quantity);
-
-            // Copy all the non-candidates to new cart
-            foreach (var entry in originalCart)
+            // Get all candidate entries that can be batched
+            // And copy all the non-candidates to new cart
+            int candidatesSku1Count = 0;
+            int candidatesSku2Count = 0;
+            for (int i = 0, l = originalCart.Count; i < l; i++)
             {
-                if (!candidateConditionSku1(entry) && !candidateConditionSku2(entry))
+                if (candidateConditionSku1(originalCart[i]))
                 {
-                    cart.Add(entry.Clone() as SkuCartEntry);
+                    // Candidate: keep note of the quantity
+                    candidatesSku1Count += originalCart[i].Quantity;
+                    continue;
                 }
+                if (candidateConditionSku2(originalCart[i]))
+                {
+                    // Candidate: keep note of the quantity
+                    candidatesSku2Count += originalCart[i].Quantity;
+                    continue;
+                }
+
+                // Non candidate: transfer to new cart
+                cart.Add(originalCart[i].Clone() as SkuCartEntry);
             }
 
             // Batch candidates in new cart

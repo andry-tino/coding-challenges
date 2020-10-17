@@ -5,6 +5,7 @@ namespace PromoEng.Engine
 {
     /// <summary>
     /// Represents a Stock Keeping Unit.
+    /// SKUs are readonly: once created, they cannot be modified.
     /// </summary>
     /// <remarks>
     /// SKUs do not keep track of prices, that happens at a different level
