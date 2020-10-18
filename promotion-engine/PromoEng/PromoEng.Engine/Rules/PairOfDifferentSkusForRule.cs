@@ -42,6 +42,11 @@ namespace PromoEng.Engine.Rules
             this.Sku1 = sku1 ?? throw new ArgumentNullException(nameof(sku1));
             this.Sku2 = sku2 ?? throw new ArgumentNullException(nameof(sku2));
             this.TotalPrice = Math.Abs(totalPrice);
+
+            if (this.Sku1.CompareTo(this.Sku2) == 0)
+            {
+                throw new ArgumentException("Cannot use the same SKU in the rule", nameof(sku2));
+            }
         }
 
         /// <inheritdoc/>

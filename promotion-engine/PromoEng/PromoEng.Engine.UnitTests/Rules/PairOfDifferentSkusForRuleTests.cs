@@ -14,6 +14,19 @@ namespace PromoEng.Engine.UnitTests
     /// </summary>
     public class PairOfDifferentSkusForRuleTests
     {
+        [Fact]
+        public void WhenSameSkuIsUsedThenExceptionIsThrownAtConstruction()
+        {
+            var testContext = new TestContext();
+
+            var sku = testContext.CreateNewSku("A", 100);
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var rule = new PairOfDifferentSkusForRule(testContext.CartFactory, sku, sku, 100);
+            });
+        }
+
         [Theory]
         [InlineData(false, false, 50)]
         [InlineData(false, false, -50)]
