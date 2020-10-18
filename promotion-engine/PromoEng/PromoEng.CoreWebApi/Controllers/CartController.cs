@@ -107,11 +107,11 @@ namespace PromoEng.CoreWebApi.Controllers
             }
             catch (Exception e)
             {
-                this.logger.LogError($"Could not create new cart: {cartInfo.Id}");
+                this.logger?.LogError($"Could not create new cart: {cartInfo.Id}");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Create, CartOperationStatus.Error, e);
             }
 
-            this.logger.LogInformation($"Created new cart: {cartInfo.Id}");
+            this.logger?.LogInformation($"Created new cart: {cartInfo.Id}");
 
             return new CartOperationInfo<CartInfo>(CartOperationType.Create, CartOperationStatus.Successful)
             {
@@ -130,27 +130,27 @@ namespace PromoEng.CoreWebApi.Controllers
             var cartEntry = this.dataSource.Retrieve(id);
             if (cartEntry == null)
             {
-                this.logger.LogError($"Cannot checkout, cart {id} could not be found");
+                this.logger?.LogError($"Cannot checkout, cart {id} could not be found");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"Could not retrieve cart with id '{id}'"));
             }
 
             if (cartEntry.Info.CheckedOut)
             {
-                this.logger.LogError($"Cannot checkout, cart {id} is already checked out");
+                this.logger?.LogError($"Cannot checkout, cart {id} is already checked out");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"Cart with id '{id}' was already checked out"));
             }
 
             if (cartEntry.Cart.Quantity == 0)
             {
-                this.logger.LogError($"Cannot checkout, cart {id} is empty");
+                this.logger?.LogError($"Cannot checkout, cart {id} is empty");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"Cart with id '{id}' is empty"));
             }
 
             cartEntry.Info.CheckedOut = true;
-            this.logger.LogInformation($"Cart {cartEntry.Info.Id} was checked out successfully");
+            this.logger?.LogInformation($"Cart {cartEntry.Info.Id} was checked out successfully");
 
             return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Successful)
             {
@@ -170,15 +170,15 @@ namespace PromoEng.CoreWebApi.Controllers
         {
             if (skuId == null)
             {
-                this.logger.LogError($"Cannot add to cart {id}: no SKU id provided");
+                this.logger?.LogError($"Cannot add to cart {id}: no SKU id provided");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"To add to a cart a valid SKU id is required"));
             }
 
-            var sku = this.priceList.Keys.FirstOrDefault(sku => sku.Id == id);
+            var sku = this.priceList.Keys.FirstOrDefault(sku => sku.Id == skuId);
             if (sku == null)
             {
-                this.logger.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: SKU not found");
+                this.logger?.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: SKU not found");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"SKU with id '{skuId}' could not be found"));
             }
@@ -186,21 +186,21 @@ namespace PromoEng.CoreWebApi.Controllers
             var cartEntry = this.dataSource.Retrieve(id);
             if (cartEntry == null)
             {
-                this.logger.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: cart not found");
+                this.logger?.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: cart not found");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"Could not retrieve cart with id '{id}'"));
             }
 
             if (cartEntry.Info.CheckedOut)
             {
-                this.logger.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: cart is checked out");
+                this.logger?.LogError($"Cannot add {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}: cart is checked out");
                 return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Error,
                     new Exception($"Cart with id '{id}' is checked out, operation forbidden"));
             }
 
             // Execute the add and modify the cart
             cartEntry.Cart.Add(sku, quantity.HasValue ? quantity.Value : 1);
-            this.logger.LogInformation($"Added {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}");
+            this.logger?.LogInformation($"Added {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}");
 
             // Every time we modify the cart, we rerun the pipeline and update the cart
             this.ApplyPipeline(cartEntry);
@@ -225,19 +225,19 @@ namespace PromoEng.CoreWebApi.Controllers
             var cartEntry = this.dataSource.Remove(id);
             if (cartEntry == null)
             {
-                this.logger.LogError($"Cannot delete cart {id}: cart not found");
+                this.logger?.LogError($"Cannot delete cart {id}: cart not found");
                 return new CartOperationInfo<string>(CartOperationType.Delete, CartOperationStatus.Error,
                     new Exception($"Could not retrieve cart with id '{id}'"));
             }
 
             if (cartEntry.Info.CheckedOut)
             {
-                this.logger.LogError($"Cannot delete cart {id}: cart is checked out");
+                this.logger?.LogError($"Cannot delete cart {id}: cart is checked out");
                 return new CartOperationInfo<string>(CartOperationType.Delete, CartOperationStatus.Error,
                     new Exception($"Cart with id '{id}' is checked out, operation forbidden"));
             }
 
-            this.logger.LogInformation($"Delete cart {id}");
+            this.logger?.LogInformation($"Delete cart {id}");
 
             return new CartOperationInfo<string>(CartOperationType.Delete, CartOperationStatus.Successful)
             {
@@ -253,14 +253,14 @@ namespace PromoEng.CoreWebApi.Controllers
                 cartEntry.Cart = this.promotionPipeline.Apply(cartEntry.Cart);
                 decimal newTotal = cartEntry.Cart.Total;
 
-                this.logger.LogInformation($"Cart {cartEntry.Id} updated through pipeline: {oldTotal} => {newTotal}");
+                this.logger?.LogInformation($"Cart {cartEntry.Id} updated through pipeline: {oldTotal} => {newTotal}");
 
                 var faultTolerantPipeline = this.promotionPipeline as FaultTolerantPromotionPipeline;
                 if (faultTolerantPipeline != null && faultTolerantPipeline.LastApplyExceptions.Any())
                 {
                     foreach (var errorReport in faultTolerantPipeline.LastApplyExceptions)
                     {
-                        this.logger.LogError($"Cart {cartEntry.Id} updated with errors: rule '{errorReport.Item1}' faulted with '{errorReport.Item2.Message}'");
+                        this.logger?.LogError($"Cart {cartEntry.Id} updated with errors: rule '{errorReport.Item1}' faulted with '{errorReport.Item2.Message}'");
                     }
                 }
             });
