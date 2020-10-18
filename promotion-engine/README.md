@@ -55,6 +55,8 @@ The library consists of the following key components:
 
 The library provides concrete types implementing the abtractions described above. See comments in each of those components for more info.
 
+**Note:** The challenge provides 3 test cases which have been coded in a scenario suite: `/promotion-engine/PromoEng/PromoEng.Engine.Scenarios/DifferentRulesScenarios.cs`.
+
 Design goals:
 
 1. **Immutability of carts with respect to rules:** Considering the library has application in contexts involving money and the purchase/selling of goods, design has been optimized for **transactional scenarios**. Rules treat carts as immutable objects. This adds a cost in terms of GC pressure.
