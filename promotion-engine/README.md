@@ -1,14 +1,19 @@
 # [Challenge](Challenge.md), .NET Core library + ASP.NET Core Api
 October 2020.
 
+This includes:
+
+- A .NET Core library (written in C#) as required by the assignment.
+- An ASP.NET Core web Api used as an example of usage of the library.
+
 ## Requirements
-To be able to build the li8brary and build and run the application, you need:
+To be able to build the library and build & run the application, you need:
 
 - [Microsoft .NET Core](https://dotnet.microsoft.com/download) 3.1.
 - [Microsoft Visual Studio](https://visualstudio.microsoft.com/) (whatever flavor, latest version).
-- An operating system targeted by the .NET Core: WIndows, MacOS or Linux.
+- An operating system targeted by the .NET Core: Windows, MacOS or Linux.
 
-To interact with the web API, you will need either:
+To interact with the web API, you will need:
 
 - An HTTP client (fx. [Postman](https://www.postman.com/), [Fiddler](https://www.telerik.com/download/fiddler), etc.).
 
@@ -17,17 +22,20 @@ To get the application, you can:
 
 - [Clone the Challenges repository](https://github.com/andry-tino/coding-challenges.git).
 
+The code will be inside the `promotion-engine` directory.
+
 ## Build
-Two solutions have been set up:
+Two solutions have been created:
 
 - `PromoEngLibrary.sln`: library only.
 - `PromoEng.sln`: library + example app (web API).
 
 You have these options:
+
 - If you want to build the library and run its tests, open `PromoEngLibrary.sln` in Visual Studio, build and run tests.
 - If you want to test the library using the example web API, open `PromoEng.sln` in Visual Studio, build and run tests. To run the web app, choose the `PromoEng.CoreWebApi` as run configuration (after selecting the `PromoEng.CoreWebApi` project) and run it.
 
-By default, the server will run on port `5000` for HTTP (only in `Development` environment) and port `5001` for HTTPS (recommended).
+By default, the server will run on port `5000` for HTTP and port `5001` for HTTPS (recommended).
 
 The web app will start with configuration `appsettings.json`. In there, you can find the default sequence of rules being set and the SKU collection. You can change it and restart the app to use a different sequence of rules and a different set of SKU.
 
@@ -45,9 +53,11 @@ The library consists of the following key components:
 - `IPromotionRule`: Interface describing the general behavior of a promotion rule. Promotion rules are thought as atomic and having no side effects on carts. They take a cart as input and, without changing it, return a different cart. Promotion rules are mutually exclusive: one SKU in cart can be processed by one rule only.
 - `IPromotionPipeline`: An interface describing the general behavior of a `promotion pipeline`, that is: a sequential application of promotion rules in a specific order. Pipelines require rules to be added. When applied to a cart, a new cart is returned as a result of the application of all the rules, in order.
 
+The library provides concrete types implementing the abtractions described above. See comments in each of those components for more info.
+
 Design goals:
 
-1. **Immutability of carts with respect to rules:** Considering the library has application in scenarios involving money and the purchase and selling of goods, design has been optimized for transactional scenarios. Rules treat carts as immutable objects. This adds a cost in terms of GC pressure.
+1. **Immutability of carts with respect to rules:** Considering the library has application in contexts involving money and the purchase/selling of goods, design has been optimized for **transactional scenarios**. Rules treat carts as immutable objects. This adds a cost in terms of GC pressure.
 2. **Complexity:** Rules execute with linear complexity with respect to the number of items in the cart.
 
 ---
