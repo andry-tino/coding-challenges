@@ -33,6 +33,25 @@ The web app will start with configuration `appsettings.json`. In there, you can 
 
 ---
 
+## The library
+The library consists of the following key components:
+
+- `ICart`: An interface describing the general behavior of a cart:
+    - Storing SKUs.
+    - Merging with another cart.
+    - Providing info on the collection.
+    - Adding SKUs to the collection.
+- `Sku`: A type representing a single SKU for exclusive identification purposes.
+- `IPromotionRule`: Interface describing the general behavior of a promotion rule. Promotion rules are thought as atomic and having no side effects on carts. They take a cart as input and, without changing it, return a different cart. Promotion rules are mutually exclusive: one SKU in cart can be processed by one rule only.
+- `IPromotionPipeline`: An interface describing the general behavior of a `promotion pipeline`, that is: a sequential application of promotion rules in a specific order. Pipelines require rules to be added. When applied to a cart, a new cart is returned as a result of the application of all the rules, in order.
+
+Design goals:
+
+1. **Immutability of carts with respect to rules:** Considering the library has application in scenarios involving money and the purchase and selling of goods, design has been optimized for transactional scenarios. Rules treat carts as immutable objects. This adds a cost in terms of GC pressure.
+2. **Complexity:** Rules execute with linear complexity with respect to the number of items in the cart.
+
+---
+
 ## The web API
 The web server exposes the following endpoints:
 
