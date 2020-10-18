@@ -11,7 +11,7 @@ namespace PromoEng.CoreWebApi
     /// </summary>
     public class CartsCollection : IInMemoryCollection<CartsCollection.CartsCollectionEntry>
     {
-        private IDictionary<string, CartsCollectionEntry> carts;
+        protected IDictionary<string, CartsCollectionEntry> carts;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CartsCollection"/> class.

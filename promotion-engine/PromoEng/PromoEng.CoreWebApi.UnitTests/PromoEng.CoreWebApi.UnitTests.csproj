@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PromoEng.CoreWebApi\PromoEng.CoreWebApi.csproj" />
+    <ProjectReference Include="..\Testability\PromoEng.Testability.csproj" />
   </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ namespace PromoEng.CoreWebApi
         /// <summary>
         /// Gets the unique identifier of this cart.
         /// </summary>
-        public string Id { get; }
+        public string Id { get; protected set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the cart has been checked out or not.

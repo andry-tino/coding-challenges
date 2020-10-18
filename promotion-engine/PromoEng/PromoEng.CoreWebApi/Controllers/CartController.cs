@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -202,7 +203,7 @@ namespace PromoEng.CoreWebApi.Controllers
             this.logger.LogInformation($"Added {(quantity.HasValue ? quantity.Value : 1)}x SKU {skuId} to cart {id}");
 
             // Every time we modify the cart, we rerun the pipeline and update the cart
-            cartEntry.Cart = this.ApplyPipeline(cartEntry.Cart, cartEntry.Id);
+            this.ApplyPipeline(cartEntry);
 
             return new CartOperationInfo<CartInfo>(CartOperationType.Update, CartOperationStatus.Successful)
             {
@@ -244,22 +245,25 @@ namespace PromoEng.CoreWebApi.Controllers
             };
         }
 
-        private ICart ApplyPipeline(ICart cart, string cartId)
+        private void ApplyPipeline(CartsCollection.CartsCollectionEntry cartEntry)
         {
-            ICart newCart = this.promotionPipeline.Apply(cart);
-
-            this.logger.LogInformation($"Cart {cartId} updated through pipeline: {cart.Total} => {newCart.Total}");
-
-            var faultTolerantPipeline = this.promotionPipeline as FaultTolerantPromotionPipeline;
-            if (faultTolerantPipeline != null && faultTolerantPipeline.LastApplyExceptions.Any())
+            Task.Run(() =>
             {
-                foreach (var errorReport in faultTolerantPipeline.LastApplyExceptions)
-                {
-                    this.logger.LogError($"Cart {cartId} updated with errors: rule '{errorReport.Item1}' faulted with '{errorReport.Item2.Message}'");
-                }
-            }
+                decimal oldTotal = cartEntry.Cart.Total;
+                cartEntry.Cart = this.promotionPipeline.Apply(cartEntry.Cart);
+                decimal newTotal = cartEntry.Cart.Total;
 
-            return newCart;
+                this.logger.LogInformation($"Cart {cartEntry.Id} updated through pipeline: {oldTotal} => {newTotal}");
+
+                var faultTolerantPipeline = this.promotionPipeline as FaultTolerantPromotionPipeline;
+                if (faultTolerantPipeline != null && faultTolerantPipeline.LastApplyExceptions.Any())
+                {
+                    foreach (var errorReport in faultTolerantPipeline.LastApplyExceptions)
+                    {
+                        this.logger.LogError($"Cart {cartEntry.Id} updated with errors: rule '{errorReport.Item1}' faulted with '{errorReport.Item2.Message}'");
+                    }
+                }
+            });
         }
     }
 }

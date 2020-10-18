@@ -12,8 +12,8 @@ namespace PromoEng.CoreWebApi
     /// </summary>
     public class PromotionPipelineFactory : IPromotionPipelineFactory
     {
-        private const string CollectionOfSameSkuForRuleId = "CollectionOfSameSkuFor";
-        private const string PairOfDifferentSkusForRuleId = "PairOfDifferentSkusForRuleId";
+        public const string CollectionOfSameSkuForRuleId = "CollectionOfSameSkuFor";
+        public const string PairOfDifferentSkusForRuleId = "PairOfDifferentSkusForRuleId";
 
         private readonly IList<PromotionRuleOption> promotionRuleOptions;
         private readonly ICartFactory cartFactory;
@@ -50,7 +50,7 @@ namespace PromoEng.CoreWebApi
             return pipeline;
         }
 
-        private IPromotionRule CreateRule(PromotionRuleOption promotionRuleOption)
+        protected virtual IPromotionRule CreateRule(PromotionRuleOption promotionRuleOption)
         {
             if (promotionRuleOption.Id == CollectionOfSameSkuForRuleId)
             {

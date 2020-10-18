@@ -47,7 +47,8 @@ namespace PromoEng.CoreWebApi
             this.Status = status;
             this.Exception = exception;
 
-            if (exception == null && status == CartOperationStatus.Error)
+            if ((exception == null && status == CartOperationStatus.Error) || 
+                (exception != null && status == CartOperationStatus.Successful))
             {
                 throw new ArgumentNullException(nameof(exception),
                     "Necessary and sufficient condition for exception to be present is that the message is set as error");
